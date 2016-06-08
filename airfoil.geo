@@ -61,8 +61,8 @@ fline = newl;
 upperMesh[]={}; // Lines for the upperMesh
 lowerMesh[]={}; // Lines for the lowerMesh
 
-	Line(fline++) = upperSurface[];upperMesh[]+=fline;
-	Line(fline++) = lowerSurface[];lowerMesh[]+=fline;
+	Line(fline++) = upperSurface[]; Transfinite Line {fline}=nPoint; upperMesh[]+=fline;
+	Line(fline++) = lowerSurface[]; Transfinite Line {fline}=nPoint; lowerMesh[]+=fline;
 
 /* ---- End Airfoil generation ---- */
 
@@ -83,8 +83,8 @@ EndFor
 
 	Line(fline++) = upperPointMesh[]; Transfinite Line {fline}=nPoint; upperMesh[]+=-fline;
 	Line(fline++) = lowerPointMesh[]; Transfinite Line {fline}=nPoint; lowerMesh[]+=-fline;
-	Line(fline++) = {upperPointMesh[0],upperSurface[0]}; upperMesh[]+=fline; lowerMesh[]+=fline; Transfinite Line {fline}=nPoint/2 Using Progression 1/2;
-	Line(fline++) = {upperSurface[nPoint],upperPointMesh[nPoint]}; upperMesh[]+=fline; lowerMesh[]+=fline;Transfinite Line {fline}=nPoint/2 Using Progression 2;
+	Line(fline++) = {upperPointMesh[0],upperSurface[0]}; upperMesh[]+=fline; lowerMesh[]+=fline; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2;
+	Line(fline++) = {upperSurface[nPoint],upperPointMesh[nPoint]}; upperMesh[]+=fline; lowerMesh[]+=fline;Transfinite Line {fline}=nPoint/2 Using Progression 1.2;
 
 	Line loop(fline++) = upperMesh[]; upperLoop = fline;
 	Line loop(fline++) = lowerMesh[]; lowerLoop = fline;
