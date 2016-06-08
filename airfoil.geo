@@ -8,10 +8,10 @@ NACA equation from: http://airfoiltools.com/airfoil/naca4digit
 
 /* NACA parameters (NACA MPXX)*/
 
-Chord 	= 1; // Chord lenght (m)
-Camber 	= 6; // maximun camber in % of Chord ( if M = 2 then maximun camber = 2*Chord/100)
+Chord 	= ; // Chord lenght (m)
+Camber 	= 2; // maximun camber in % of Chord ( if M = 2 then maximun camber = 2*Chord/100)
 PCamber	= 4;// position of the maximun camber (if P = 1 then position = 1*Chord/10)
-Thickness=12;//maximun thickness of the airfoil in % of Chord (if XX = 12 then thickness = 12*Chord/100)
+Thickness=18;//maximun thickness of the airfoil in % of Chord (if XX = 12 then thickness = 12*Chord/100)
 
 /* NACA equation constants */
 
@@ -20,9 +20,9 @@ a1 = -0.126;
 a2 = -0.3516;
 a3 = 0.2843;
 a4 = -0.1036; //closed trailing edge!
-M  = Camber*Chord/100; 
-P  = PCamber*Chord/10;
-XX = Thickness*Chord/100;
+M  = Camber/100; 
+P  = PCamber/10;
+XX = Thickness/100;
 /* Mesh parameters */
 
 nPoint	= 50; // number of points to divide the Chord
@@ -47,11 +47,10 @@ For beta In {0:Pi:Pi/nPoint}
 	
 		yt = XX/0.2*(a0*x^(1/2)+a1*x+a2*x^(2)+a3*x^(3)+a4*x^(4));
 		theta= Atan(dyx);
-		xc = Chord*x;
-		xu = xc - yt*Sin(theta);
-		yu = yc + yt*Cos(theta);
-		xl = xc + yt*Sin(theta);
-		yl = yc - yt*Cos(theta);
+		xu = (x - yt*Sin(theta))*Chord;
+		yu = (yc + yt*Cos(theta))*Chord;
+		xl = (x + yt*Sin(theta))*Chord;
+		yl = (yc - yt*Cos(theta))*Chord;
 	Point(count++)={xu,yu,0};upperSurface[]+=count;
 	Point(count++)={xl,yl,0};lowerSurface[]+=count;
 EndFor
@@ -75,7 +74,7 @@ For beta In {0:Pi:Pi/nPoint}
 
 	x = -nearBlade+(Chord+2*nearBlade)*(1-Cos(beta))/2; // improve head - tail resolution
 	
-	y = Sqrt(1-((x-1/2*Chord)/(nearBlade+1/2*Chord))^2)*(nearBlade+XX);
+	y = Sqrt(1-((x-1/2*Chord)/(nearBlade+1/2*Chord))^2)*(nearBlade+XX*Chord);
 	Point(count++)={x, y,0};upperPointMesh[]+=count;
 	Point(count++)={x,-y,0};lowerPointMesh[]+=count;
 EndFor
