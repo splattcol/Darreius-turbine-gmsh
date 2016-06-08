@@ -81,6 +81,14 @@ For beta In {0:Pi:Pi/nPoint}
 EndFor
 	Point(count++)={Chord+nearBlade,0,0};upperPointMesh[]+=count;lowerPointMesh[]+=count;
 
-	
+	Line(fline++) = upperPointMesh[]; Transfinite Line {fline}=nPoint; upperMesh[]+=-fline;
+	Line(fline++) = lowerPointMesh[]; Transfinite Line {fline}=nPoint; lowerMesh[]+=-fline;
+	Line(fline++) = {upperPointMesh[0],upperSurface[0]}; upperMesh[]+=fline; lowerMesh[]+=fline; Transfinite Line {fline}=nPoint/2 Using Progression 1/2;
+	Line(fline++) = {upperSurface[nPoint],upperPointMesh[nPoint]}; upperMesh[]+=fline; lowerMesh[]+=fline;Transfinite Line {fline}=nPoint/2 Using Progression 2;
+
+	Line loop(fline++) = upperMesh[]; upperLoop = fline;
+	Line loop(fline++) = lowerMesh[]; lowerLoop = fline;
+
+	Plane Surface(fline++) = {upperLoop}; Transfinite Surface {fline}; Recombine Surface {fline};
 
 
