@@ -25,15 +25,16 @@ P  = PCamber*Chord/10;
 XX = Thickness*Chord/100;
 /* Mesh parameters */
 
-nPoint	= 200; // number of points to divide the Chord
+nPoint	= 50; // number of points to divide the Chord
 nearBlade = 1/2*Chord; // Near blade zone - structured mesh zone - 
+/* ---- Start Airfoil generation ----*/
 count = newp;
-
 upperSurface[]={};
 lowerSurface[]={};
-//x=0;
-//yc=0;
-For x In {0:1:1/nPoint}
+
+For beta In {0:Pi:Pi/nPoint}
+	
+	x = (1-Cos(beta))/2; // improve head - tail resolution
 
 	If (x<(PCamber/10))
 		yc = (M/(P^2))*((2*P*x)-x^2);
@@ -54,11 +55,32 @@ For x In {0:1:1/nPoint}
 	Point(count++)={xu,yu,0};upperSurface[]+=count;
 	Point(count++)={xl,yl,0};lowerSurface[]+=count;
 EndFor
-	Point(count++)={Chord,0,0};upperSurface[]+=count;
-	Point(count++)={Chord,0,0};lowerSurface[]+=count;
+	Point(count++)={Chord,0,0};upperSurface[]+=count;lowerSurface[]+=count;
 fline = newl;
-	Line(fline)   = upperSurface[];
-	Line(fline++) = lowerSurface[];
+
+upperMesh[]={}; // Lines for the upperMesh
+lowerMesh[]={}; // Lines for the lowerMesh
+
+	Line(fline++) = upperSurface[];upperMesh[]+=fline;
+	Line(fline++) = lowerSurface[];lowerMesh[]+=fline;
+
+/* ---- End Airfoil generation ---- */
+
+/* ---- Start Mesh generation  ---- */
+
+upperPointMesh[] = {};
+lowerPointMesh[] = {};
+
+For beta In {0:Pi:Pi/nPoint}
+
+	x = -nearBlade+(Chord+2*nearBlade)*(1-Cos(beta))/2; // improve head - tail resolution
+	
+	y = Sqrt(1-((x-1/2*Chord)/(nearBlade+1/2*Chord))^2)*(nearBlade+XX);
+	Point(count++)={x, y,0};upperPointMesh[]+=count;
+	Point(count++)={x,-y,0};lowerPointMesh[]+=count;
+EndFor
+	Point(count++)={Chord+nearBlade,0,0};upperPointMesh[]+=count;lowerPointMesh[]+=count;
+
 	
 
 
