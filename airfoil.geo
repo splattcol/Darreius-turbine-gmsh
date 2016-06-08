@@ -8,7 +8,7 @@ NACA equation from: http://airfoiltools.com/airfoil/naca4digit
 
 /* NACA parameters (NACA MPXX)*/
 
-Chord 	= ; // Chord lenght (m)
+Chord 	= 0.032; // Chord lenght (m)
 Camber 	= 2; // maximun camber in % of Chord ( if M = 2 then maximun camber = 2*Chord/100)
 PCamber	= 4;// position of the maximun camber (if P = 1 then position = 1*Chord/10)
 Thickness=18;//maximun thickness of the airfoil in % of Chord (if XX = 12 then thickness = 12*Chord/100)
@@ -89,8 +89,9 @@ EndFor
 /* ----- Line loops and Surfaces generation -----*/
 	Line loop(fline++) = upperMesh[]; upperLoop = fline;
 	Line loop(fline++) = lowerMesh[]; lowerLoop = fline;
-
-	Plane Surface(fline++) = {upperLoop}; Transfinite Surface {fline}; Recombine Surface {fline};
-	Plane Surface(fline++) = {lowerLoop}; Transfinite Surface {fline}; Recombine Surface {fline};
+AirfoilM[]={};
+	Plane Surface(fline++) = {upperLoop}; Airfoil[]+=fline; Transfinite Surface {fline}; Recombine Surface {fline};
+	Plane Surface(fline++) = {lowerLoop}; Airfoil[]+=fline; Transfinite Surface {fline}; Recombine Surface {fline};
+Translate{-Chord/2,0,0}{Surface{Airfoil[]};}
 /* ---- End structured mesh generation ---- */
 
