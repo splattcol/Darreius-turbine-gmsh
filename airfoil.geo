@@ -93,4 +93,5 @@ EndFor
 
 	Plane Surface(fline++) = {upperLoop}; Transfinite Surface {fline}; Recombine Surface {fline};
 	Plane Surface(fline++) = {lowerLoop}; Transfinite Surface {fline}; Recombine Surface {fline};
+/* ---- End structured mesh generation ---- */
 
