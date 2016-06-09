@@ -5,18 +5,10 @@ splattcol@gmail.com
 n.vargas1304@uniandes.edu.co 
 */
 
-Include "airfoil.geo";
-
 /* ---- Rotor parameters ----*/
 nBlades	= 3; 	// number of blades
 rRotor	= 0.175/2;// Rotor radius 
-rCenter = 0.011;// Center shaft radius
-
-/* ---- Mesh parameters ----*/
-nPointCenter	= 30;		// number of points for center shaft
-rMesh		= 1/4;		// ratio mesh - if rMesh = 1/4 then Mesh radius = (1+1/4)rRotor
-nPoint		= 50; 		// number of points to divide the Chord
-nearBlade	 = 1/2*Chord;	// Near blade zone - structured mesh zone - 
+rCenter = 0.005;// Center shaft radius
 
 /* NACA parameters (NACA MPXX)*/
 
@@ -25,10 +17,27 @@ Camber 	= 2; // maximun camber in % of Chord ( if M = 2 then maximun camber = 2*
 PCamber	= 4;// position of the maximun camber (if P = 1 then position = 1*Chord/10)
 Thickness=18;//maximun thickness of the airfoil in % of Chord (if XX = 12 then thickness = 12*Chord/100)
 
+/* ---- Mesh parameters ----*/
+nPointCenter	= 30;		// number of points for center shaft
+rMesh		= 1/4;		// ratio mesh - if rMesh = 1/4 then Mesh radius = (1+1/4)rRotor
+nPoint		= 50; 		// number of points to divide the Chord
+nearBlade	= 1/2*Chord;	// Near blade zone - structured mesh zone - 
+nearRotor	= 1.5*rRotor;	// Near Rotor zone - rotation mesh zone -  !! nearRotor > rRotor !!
+nearShaft	= 1.5*rCenter;	// Near Shaft zone - structured mesh zone -!! nearShaft > rCenter !!
 
+/* NACA equation constants */
 
-cont=1;
-For theta In {0:2*Pi:2*Pi/nBlades}
+a0 = 0.2969;
+a1 = -0.126;
+a2 = -0.3516;
+a3 = 0.2843;
+a4 = -0.1036; //closed trailing edge!
+M  = Camber/100; 
+P  = PCamber/10;
+XX = Thickness/100;
+Printf ("Inicio generación Perfil");
+Acont=1;
+For alpha In {0:2*Pi:2*Pi/nBlades}
 
 	/* ---- Start Airfoil generation ----*/
 	count = newp;
@@ -93,14 +102,43 @@ For theta In {0:2*Pi:2*Pi/nBlades}
 	/* ----- Line loops and Surfaces generation -----*/
 	Line loop(fline++) = upperMesh[]; upperLoop = fline;
 	Line loop(fline++) = lowerMesh[]; lowerLoop = fline;
-	Airfoil~{cont}[]={};
-	Plane Surface(fline++) = {upperLoop}; Airfoil[]+=fline; Transfinite Surface {fline}; Recombine Surface {fline};
-	Plane Surface(fline++) = {lowerLoop}; Airfoil[]+=fline; Transfinite Surface {fline}; Recombine Surface {fline};
-	Translate{-Chord/2,0,0}{Surface{Airfoil[]};}
+	Airfoil~{Acont}[]={};
+	Plane Surface(fline++) = {upperLoop}; Airfoil~{Acont}[]+=fline; Transfinite Surface {fline}; Recombine Surface {fline};
+	Plane Surface(fline++) = {lowerLoop}; Airfoil~{Acont}[]+=fline; Transfinite Surface {fline}; Recombine Surface {fline};
+	Translate{-Chord/2,0,0}{Surface{Airfoil~{Acont}[]};} // Translate Center Airfoil to {0,0,0}
 	/* ---- End structured mesh generation ---- */
 
 /* ---- Traslation and rotation ----*/
-	x = rRotor*Sin(theta);
-	y = Sqrt(rRotor^2-x^2);
-	Translate{x,y,0}{Duplicata{Airfoil[]};}
+	x = rRotor*Sin(alpha);
+	y = rRotor*Cos(alpha);
+	Translate{x,y,0}{Surface{Airfoil~{Acont}[]};}
+	Rotate {{0,0,1},{x,y,0},-alpha}{Surface{Airfoil~{Acont}[]};}
+	Acont++;
 EndFor
+
+/* ---- Center Shaft ---- */
+pCenter= newp;
+pShaft = newp;
+lShaft = newl;
+
+upperSCenter[]={};
+lowerSCenter[]={};
+upperPCenter[]={};
+lowerPCenter[]={};
+upperMCenter[]={};
+lowerMCenter[]={};
+
+For alpha In {0:Pi:Pi/nPoint}
+	Point(pShaft++)={ rCenter*Sin(alpha), rCenter*Cos(alpha), 0}; upperSCenter[]+=pShaft;
+	Point(pShaft++)={-rCenter*Sin(alpha),-rCenter*Cos(alpha), 0}; lowerSCenter[]+=pShaft;
+	Point(pShaft++)={ nearShaft*Sin(alpha), nearShaft*Cos(alpha), 0}; upperPCenter[]+=pShaft;
+	Point(pShaft++)={-nearShaft*Sin(alpha),-nearShaft*Cos(alpha), 0}; lowerPCenter[]+=pShaft;
+EndFor
+
+
+
+
+
+
+
+
