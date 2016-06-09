@@ -127,16 +127,25 @@ upperPCenter[]={};
 lowerPCenter[]={};
 upperMCenter[]={};
 lowerMCenter[]={};
-
-For alpha In {0:Pi:Pi/nPoint}
+temp = 1;
+For alpha In {-Pi/2:Pi/2:Pi/nPointCenter}
 	Point(pShaft++)={ rCenter*Sin(alpha), rCenter*Cos(alpha), 0}; upperSCenter[]+=pShaft;
 	Point(pShaft++)={-rCenter*Sin(alpha),-rCenter*Cos(alpha), 0}; lowerSCenter[]+=pShaft;
 	Point(pShaft++)={ nearShaft*Sin(alpha), nearShaft*Cos(alpha), 0}; upperPCenter[]+=pShaft;
 	Point(pShaft++)={-nearShaft*Sin(alpha),-nearShaft*Cos(alpha), 0}; lowerPCenter[]+=pShaft;
 EndFor
-
-
-
+	Line (lShaft++)={upperSCenter[0],upperPCenter[0]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2;  upperMCenter[]+=-lShaft;
+	Line (lShaft++)={upperSCenter[nPointCenter],upperPCenter[nPointCenter]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2; upperMCenter[]+= lShaft;
+	Line (lShaft++)={lowerSCenter[0],lowerPCenter[0]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2;  lowerMCenter[]+= lShaft;
+	Line (lShaft++)={lowerSCenter[nPointCenter],lowerPCenter[nPointCenter]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2;  lowerMCenter[]+=- lShaft; 
+	Line (lShaft++)=upperSCenter[]; Transfinite Line{lShaft} = nPointCenter; upperMCenter[]+= lShaft; 
+	Line (lShaft++)=lowerSCenter[]; Transfinite Line{lShaft} = nPointCenter; lowerMCenter[]+=-lShaft; 
+	Line (lShaft++)=upperPCenter[]; Transfinite Line{lShaft} = nPointCenter; upperMCenter[]+=-lShaft; 
+	Line (lShaft++)=lowerPCenter[]; Transfinite Line{lShaft} = nPointCenter; lowerMCenter[]+= lShaft; 
+	Line loop(lShaft++) = upperMCenter[]; temp = lShaft;
+	Plane Surface(lShaft++) = {temp};  Transfinite Surface{lShaft}; Recombine Surface{lShaft};
+	Line loop(lShaft++) = lowerMCenter[]; temp = lShaft;
+	Plane Surface(lShaft++) = {temp};  Transfinite Surface{lShaft}; Recombine Surface{lShaft};
 
 
 
