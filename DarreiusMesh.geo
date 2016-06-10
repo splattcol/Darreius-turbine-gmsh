@@ -37,7 +37,8 @@ P  = PCamber/10;
 XX = Thickness/100;
 Printf ("Inicio generación Perfil");
 Acont=1;
-Airfoil	  []={};
+Airfoil[]={};
+aHole[]={};
 /* --- Rotor Mesh Generation ----*/
 For alpha In {0:1.999*Pi:2*Pi/nBlades}
 	/* ---- Start Airfoil generation ----*/
@@ -64,9 +65,13 @@ For alpha In {0:1.999*Pi:2*Pi/nBlades}
 		yu = (yc + yt*Cos(theta))*Chord;
 		xl = (x + yt*Sin(theta))*Chord;
 		yl = (yc - yt*Cos(theta))*Chord;
-	
-		Point(count++)={xu,yu,0};upperSurface[]+=count;
-		Point(count++)={xl,yl,0};lowerSurface[]+=count;
+		If (yu==yl)
+			Point(count++)={xu,yu,0};upperSurface[]+=count; lowerSurface[]+=count;
+		EndIf
+		If (yu!=yl)
+			Point(count++)={xu,yu,0};upperSurface[]+=count;
+			Point(count++)={xl,yl,0};lowerSurface[]+=count;
+		EndIf
 	EndFor
 		Point(count++)={Chord,0,0};upperSurface[]+=count;lowerSurface[]+=count;
 	fline = newl;
@@ -76,6 +81,7 @@ For alpha In {0:1.999*Pi:2*Pi/nBlades}
 
 	Line(fline++) = upperSurface[]; Transfinite Line {fline}=nPoint; upperMesh[]+=fline;
 	Line(fline++) = lowerSurface[]; Transfinite Line {fline}=nPoint; lowerMesh[]+=-fline;
+
 
 	/* ---- End Airfoil generation ---- */
 
@@ -89,20 +95,25 @@ For alpha In {0:1.999*Pi:2*Pi/nBlades}
 		x = -nearBlade+(Chord+2*nearBlade)*(1-Cos(beta))/2; // improve head - tail resolution
 	
 		y = Sqrt(1-((x-1/2*Chord)/(nearBlade+1/2*Chord))^2)*(nearBlade+XX*Chord);
-		Point(count++)={x, y,0};upperPointMesh[]+=count;
-		Point(count++)={x,-y,0};lowerPointMesh[]+=count;
+		If (y==0)
+			Point(count++)={x, y,0};upperPointMesh[]+=count; lowerPointMesh[]+=count;
+		EndIf
+		If (y!=0)
+			Point(count++)={x, y,0};upperPointMesh[]+=count; 
+			Point(count++)={x,-y,0};lowerPointMesh[]+=count;
+		EndIf
 	EndFor
 		Point(count++)={Chord+nearBlade,0,0};upperPointMesh[]+=count;lowerPointMesh[]+=count;
 
-		Line(fline++) = upperPointMesh[]; Transfinite Line {fline}=nPoint; upperMesh[]+=-fline;
-		Line(fline++) = lowerPointMesh[]; Transfinite Line {fline}=nPoint; lowerMesh[]+=fline;
-		Line(fline++) = {upperPointMesh[0],upperSurface[0]}; upperMesh[]+=fline; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2;
-		Line(fline++) = {lowerPointMesh[0],lowerSurface[0]}; lowerMesh[]+=-fline; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2;
-		Line(fline++) = {upperSurface[nPoint],upperPointMesh[nPoint]}; upperMesh[]+=fline;Transfinite Line {fline}=nPoint/2 Using Progression 1.2;
-		Line(fline++) = {lowerPointMesh[nPoint],lowerSurface[nPoint]}; lowerMesh[]+=fline; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2;
+		Line(fline++) = upperPointMesh[]; Transfinite Line {fline}=nPoint; upperMesh[]+=-fline; temp = fline; Printf("%g",fline);
+		Line(fline++) = lowerPointMesh[]; Transfinite Line {fline}=nPoint; lowerMesh[]+=fline; temp1 = fline; Printf("%g",fline);
+		Line loop(fline++) = {-temp1, temp}; aHole[]+=fline; Printf("%g",aHole[Acont-1]);
+		Line(fline++) = {upperPointMesh[0],upperSurface[0]}; upperMesh[]+=fline; lowerMesh[]+=-fline ; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2;
+
+		Line(fline++) = {upperSurface[nPoint],upperPointMesh[nPoint]}; upperMesh[]+=fline; lowerMesh[]+=-fline;Transfinite Line {fline}=nPoint/2 Using Progression 1.2;
 	/* ----- Line loops and Surfaces generation -----*/
-	Line loop(fline++) = upperMesh[]; upperLoop = fline; Airfoil[]+=fline; Printf (" %g", fline);
-	Line loop(fline++) = lowerMesh[]; lowerLoop = fline; Airfoil[]+=fline; Printf (" %g", fline);
+	Line loop(fline++) = upperMesh[]; upperLoop = fline; Airfoil[]+=fline; 
+	Line loop(fline++) = lowerMesh[]; lowerLoop = fline; Airfoil[]+=fline; 
 	Airfoil~{Acont}[]={};
 	Plane Surface(fline++) = {upperLoop}; Airfoil~{Acont}[]+=fline; Transfinite Surface {fline}; Recombine Surface {fline};
 	Plane Surface(fline++) = {lowerLoop}; Airfoil~{Acont}[]+=fline; Transfinite Surface {fline}; Recombine Surface {fline};
@@ -131,10 +142,16 @@ upperMCenter[]={};
 lowerMCenter[]={};
 temp = 1;
 For alpha In {-Pi/2:Pi/2:Pi/nPointCenter}
-	Point(pShaft++)={ rCenter*Sin(alpha), rCenter*Cos(alpha), 0}; upperSCenter[]+=pShaft;
-	Point(pShaft++)={-rCenter*Sin(alpha),-rCenter*Cos(alpha), 0}; lowerSCenter[]+=pShaft;
-	Point(pShaft++)={ nearShaft*Sin(alpha), nearShaft*Cos(alpha), 0}; upperPCenter[]+=pShaft;
-	Point(pShaft++)={-nearShaft*Sin(alpha),-nearShaft*Cos(alpha), 0}; lowerPCenter[]+=pShaft;
+	If (Cos(alpha)==0)
+		Point(pShaft++)={ rCenter*Sin(alpha), rCenter*Cos(alpha), 0}; upperSCenter[]+=pShaft; lowerSCenter[]+=pShaft;
+		Point(pShaft++)={ nearShaft*Sin(alpha), nearShaft*Cos(alpha), 0}; upperPCenter[]+=pShaft; lowerPCenter[]+=pShaft;
+	EndIf
+	If (Cos(alpha)!=0)
+		Point(pShaft++)={ rCenter*Sin(alpha), rCenter*Cos(alpha), 0}; upperSCenter[]+=pShaft;
+		Point(pShaft++)={-rCenter*Sin(alpha),-rCenter*Cos(alpha), 0}; lowerSCenter[]+=pShaft;
+		Point(pShaft++)={ nearShaft*Sin(alpha), nearShaft*Cos(alpha), 0}; upperPCenter[]+=pShaft;
+		Point(pShaft++)={-nearShaft*Sin(alpha),-nearShaft*Cos(alpha), 0}; lowerPCenter[]+=pShaft;
+	EndIf
 EndFor
 	/* ----- Line loops and Surfaces generation -----*/
 	Line (lShaft++)={upperSCenter[0],upperPCenter[0]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2;  upperMCenter[]+=-lShaft;
@@ -143,8 +160,9 @@ EndFor
 	Line (lShaft++)={lowerSCenter[nPointCenter],lowerPCenter[nPointCenter]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2;  lowerMCenter[]+=- lShaft; 
 	Line (lShaft++)=upperSCenter[]; Transfinite Line{lShaft} = nPointCenter; upperMCenter[]+= lShaft; 
 	Line (lShaft++)=lowerSCenter[]; Transfinite Line{lShaft} = nPointCenter; lowerMCenter[]+=-lShaft; 
-	Line (lShaft++)=upperPCenter[]; Transfinite Line{lShaft} = nPointCenter; upperMCenter[]+=-lShaft; 
-	Line (lShaft++)=lowerPCenter[]; Transfinite Line{lShaft} = nPointCenter; lowerMCenter[]+= lShaft; 
+	Line (lShaft++)=upperPCenter[]; temp = lShaft; Transfinite Line{lShaft} = nPointCenter; upperMCenter[]+=-lShaft; 
+	Line (lShaft++)=lowerPCenter[]; temp1= lShaft; Transfinite Line{lShaft} = nPointCenter; lowerMCenter[]+= lShaft; 
+	Line loop(lShaft++) = {-temp1, temp}; Shaft = lShaft; Printf(" %g ",Shaft);
 	Line loop(lShaft++) = upperMCenter[]; ShaftU = lShaft;
 	Plane Surface(lShaft++) = {ShaftU};  Transfinite Surface{lShaft}; Recombine Surface{lShaft};
 	Line loop(lShaft++) = lowerMCenter[]; ShaftL = lShaft;
@@ -162,10 +180,7 @@ For alpha In {0:2*Pi:Pi/nPoint}
 	Point(pRotor++)={ nearRotor*Sin(alpha), nearRotor*Cos(alpha), 0}; RotorPoint[]+=pRotor;
 EndFor
 	RotorPoint[]+=RotorPoint[0];
-Printf("1");
 	Line (lRotor) = RotorPoint[]; temp = lRotor;
-Printf("2");
 	Line loop(lRotor++) = {temp}; temp = lRotor;
-	Plane Surface (lRotor++) = {temp,Airfoil[],ShaftU,ShaftL};
-
+	Plane Surface (lRotor++) = {temp, aHole[], Shaft};
 
