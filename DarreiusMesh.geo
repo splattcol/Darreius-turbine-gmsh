@@ -37,8 +37,9 @@ P  = PCamber/10;
 XX = Thickness/100;
 Printf ("Inicio generación Perfil");
 Acont=1;
-For alpha In {0:2*Pi:2*Pi/nBlades}
-
+Airfoil	  []={};
+/* --- Rotor Mesh Generation ----*/
+For alpha In {0:1.999*Pi:2*Pi/nBlades}
 	/* ---- Start Airfoil generation ----*/
 	count = newp;
 	upperSurface[]={};
@@ -100,8 +101,8 @@ For alpha In {0:2*Pi:2*Pi/nBlades}
 		Line(fline++) = {upperSurface[nPoint],upperPointMesh[nPoint]}; upperMesh[]+=fline;Transfinite Line {fline}=nPoint/2 Using Progression 1.2;
 		Line(fline++) = {lowerPointMesh[nPoint],lowerSurface[nPoint]}; lowerMesh[]+=fline; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2;
 	/* ----- Line loops and Surfaces generation -----*/
-	Line loop(fline++) = upperMesh[]; upperLoop = fline;
-	Line loop(fline++) = lowerMesh[]; lowerLoop = fline;
+	Line loop(fline++) = upperMesh[]; upperLoop = fline; Airfoil[]+=fline; Printf (" %g", fline);
+	Line loop(fline++) = lowerMesh[]; lowerLoop = fline; Airfoil[]+=fline; Printf (" %g", fline);
 	Airfoil~{Acont}[]={};
 	Plane Surface(fline++) = {upperLoop}; Airfoil~{Acont}[]+=fline; Transfinite Surface {fline}; Recombine Surface {fline};
 	Plane Surface(fline++) = {lowerLoop}; Airfoil~{Acont}[]+=fline; Transfinite Surface {fline}; Recombine Surface {fline};
@@ -113,9 +114,10 @@ For alpha In {0:2*Pi:2*Pi/nBlades}
 	y = rRotor*Cos(alpha);
 	Translate{x,y,0}{Surface{Airfoil~{Acont}[]};}
 	Rotate {{0,0,1},{x,y,0},-alpha}{Surface{Airfoil~{Acont}[]};}
+	
 	Acont++;
 EndFor
-
+/* ---- End nBlades Generation ----*/
 /* ---- Center Shaft ---- */
 pCenter= newp;
 pShaft = newp;
@@ -134,6 +136,7 @@ For alpha In {-Pi/2:Pi/2:Pi/nPointCenter}
 	Point(pShaft++)={ nearShaft*Sin(alpha), nearShaft*Cos(alpha), 0}; upperPCenter[]+=pShaft;
 	Point(pShaft++)={-nearShaft*Sin(alpha),-nearShaft*Cos(alpha), 0}; lowerPCenter[]+=pShaft;
 EndFor
+	/* ----- Line loops and Surfaces generation -----*/
 	Line (lShaft++)={upperSCenter[0],upperPCenter[0]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2;  upperMCenter[]+=-lShaft;
 	Line (lShaft++)={upperSCenter[nPointCenter],upperPCenter[nPointCenter]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2; upperMCenter[]+= lShaft;
 	Line (lShaft++)={lowerSCenter[0],lowerPCenter[0]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2;  lowerMCenter[]+= lShaft;
@@ -142,12 +145,27 @@ EndFor
 	Line (lShaft++)=lowerSCenter[]; Transfinite Line{lShaft} = nPointCenter; lowerMCenter[]+=-lShaft; 
 	Line (lShaft++)=upperPCenter[]; Transfinite Line{lShaft} = nPointCenter; upperMCenter[]+=-lShaft; 
 	Line (lShaft++)=lowerPCenter[]; Transfinite Line{lShaft} = nPointCenter; lowerMCenter[]+= lShaft; 
-	Line loop(lShaft++) = upperMCenter[]; temp = lShaft;
-	Plane Surface(lShaft++) = {temp};  Transfinite Surface{lShaft}; Recombine Surface{lShaft};
-	Line loop(lShaft++) = lowerMCenter[]; temp = lShaft;
-	Plane Surface(lShaft++) = {temp};  Transfinite Surface{lShaft}; Recombine Surface{lShaft};
+	Line loop(lShaft++) = upperMCenter[]; ShaftU = lShaft;
+	Plane Surface(lShaft++) = {ShaftU};  Transfinite Surface{lShaft}; Recombine Surface{lShaft};
+	Line loop(lShaft++) = lowerMCenter[]; ShaftL = lShaft;
+	Plane Surface(lShaft++) = {ShaftL};  Transfinite Surface{lShaft}; Recombine Surface{lShaft};
+	/* ---- End structured mesh generation ---- */
+/* ---- End Center Shaft Generation ---- */
+/* ---- Rotor Mesh ---- */
 
+RotorPoint[]={};
+RotorMesh []={};
 
-
+pRotor = newp;
+lRotor = newl;
+For alpha In {0:2*Pi:Pi/nPoint}
+	Point(pRotor++)={ nearRotor*Sin(alpha), nearRotor*Cos(alpha), 0}; RotorPoint[]+=pRotor;
+EndFor
+	RotorPoint[]+=RotorPoint[0];
+Printf("1");
+	Line (lRotor) = RotorPoint[]; temp = lRotor;
+Printf("2");
+	Line loop(lRotor++) = {temp}; temp = lRotor;
+	Plane Surface (lRotor++) = {temp,Airfoil[],ShaftU,ShaftL};
 
 
