@@ -93,9 +93,9 @@ EndFor
 	Line(fline++) = upperPointMesh[]; Transfinite Line {fline}=nPoint; upperMesh[]+=-fline;
 	Line(fline++) = lowerPointMesh[]; Transfinite Line {fline}=nPoint; lowerMesh[]+=fline;
 	Line(fline++) = {upperPointMesh[0],upperSurface[0]}; upperMesh[]+=fline; lowerMesh[]+=-fline; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2; Printf(" line %g",fline);
-	//Line(fline++) = {lowerPointMesh[0],lowerSurface[0]}; lowerMesh[]+=-fline; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2;
+
 	Line(fline++) = {upperSurface[nPoint],upperPointMesh[nPoint]}; upperMesh[]+=fline; lowerMesh[]+=-fline; Transfinite Line {fline}=nPoint/2 Using Progression 1.2;
-	//Line(fline++) = {lowerPointMesh[nPoint],lowerSurface[nPoint]}; lowerMesh[]+=fline; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2;
+
 /* ----- Line loops and Surfaces generation -----*/
 	Line loop(fline++) = upperMesh[]; upperLoop = fline;
 	Line loop(fline++) = lowerMesh[]; lowerLoop = fline;
