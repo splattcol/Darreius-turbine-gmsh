@@ -51,8 +51,13 @@ For beta In {0:Pi:Pi/nPoint}
 		yu = (yc + yt*Cos(theta))*Chord;
 		xl = (x + yt*Sin(theta))*Chord;
 		yl = (yc - yt*Cos(theta))*Chord;
+	If (yu==yl)
+		Point(count++)={xu,yu,0};upperSurface[]+=count; lowerSurface[]+=count;
+	EndIf
+	If (yu!=yl)
 	Point(count++)={xu,yu,0};upperSurface[]+=count;
 	Point(count++)={xl,yl,0};lowerSurface[]+=count;
+	EndIf
 EndFor
 	Point(count++)={Chord,0,0};upperSurface[]+=count;lowerSurface[]+=count;
 fline = newl;
@@ -75,17 +80,22 @@ For beta In {0:Pi:Pi/nPoint}
 	x = -nearBlade+(Chord+2*nearBlade)*(1-Cos(beta))/2; // improve head - tail resolution
 	
 	y = Sqrt(1-((x-1/2*Chord)/(nearBlade+1/2*Chord))^2)*(nearBlade+XX*Chord);
-	Point(count++)={x, y,0};upperPointMesh[]+=count;
-	Point(count++)={x,-y,0};lowerPointMesh[]+=count;
+	If (y==0)
+		Point(count++)={x, y,0};upperPointMesh[]+=count; lowerPointMesh[]+=count;
+	EndIf
+	If (y!=0)
+	Point(count++)={x, y,0};upperPointMesh[]+=count; 
+	Point(count++)={x,-y,0};lowerPointMesh[]+=count; Printf(" %g",count);
+	EndIf
 EndFor
 	Point(count++)={Chord+nearBlade,0,0};upperPointMesh[]+=count;lowerPointMesh[]+=count;
 
 	Line(fline++) = upperPointMesh[]; Transfinite Line {fline}=nPoint; upperMesh[]+=-fline;
 	Line(fline++) = lowerPointMesh[]; Transfinite Line {fline}=nPoint; lowerMesh[]+=fline;
-	Line(fline++) = {upperPointMesh[0],upperSurface[0]}; upperMesh[]+=fline; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2;
-	Line(fline++) = {lowerPointMesh[0],lowerSurface[0]}; lowerMesh[]+=-fline; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2;
-	Line(fline++) = {upperSurface[nPoint],upperPointMesh[nPoint]}; upperMesh[]+=fline;Transfinite Line {fline}=nPoint/2 Using Progression 1.2;
-	Line(fline++) = {lowerPointMesh[nPoint],lowerSurface[nPoint]}; lowerMesh[]+=fline; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2;
+	Line(fline++) = {upperPointMesh[0],upperSurface[0]}; upperMesh[]+=fline; lowerMesh[]+=-fline; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2; Printf(" line %g",fline);
+	//Line(fline++) = {lowerPointMesh[0],lowerSurface[0]}; lowerMesh[]+=-fline; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2;
+	Line(fline++) = {upperSurface[nPoint],upperPointMesh[nPoint]}; upperMesh[]+=fline; lowerMesh[]+=-fline; Transfinite Line {fline}=nPoint/2 Using Progression 1.2;
+	//Line(fline++) = {lowerPointMesh[nPoint],lowerSurface[nPoint]}; lowerMesh[]+=fline; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2;
 /* ----- Line loops and Surfaces generation -----*/
 	Line loop(fline++) = upperMesh[]; upperLoop = fline;
 	Line loop(fline++) = lowerMesh[]; lowerLoop = fline;
@@ -94,4 +104,3 @@ AirfoilM[]={};
 	Plane Surface(fline++) = {lowerLoop}; Airfoil[]+=fline; Transfinite Surface {fline}; Recombine Surface {fline};
 Translate{-Chord/2,0,0}{Surface{Airfoil[]};}
 /* ---- End structured mesh generation ---- */
-
