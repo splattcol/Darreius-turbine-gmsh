@@ -31,6 +31,9 @@ dx 		= 0.1; //Chord/nPoint;	// Diference between staticMeshRotor and rotationMes
 dInlet		= 0.35;		// length from {0,0,0} to Inlet (in -x)
 dOutlet		= 0.75;		// length from {0,0,0} to Outlet (in x)
 dWall		= 0.35;		// length from {0,0,0} to lateral walls
+lenghtZ		= 0.1; 		// lenght for Extrusion
+dz		= 1;		// number of Extrusion's layers
+
 
 /* NACA equation constants */
 
@@ -172,9 +175,9 @@ EndFor
 	Line (lShaft++)=lowerPCenter[]; Transfinite Line{lShaft} = nPointCenter; lowerMCenter[]+= lShaft; temp1= lShaft;
 	Line loop(lShaft++) = {-temp1, temp}; Shaft = lShaft;
 	Line loop(lShaft++) = upperMCenter[]; ShaftU = lShaft;
-	Plane Surface(lShaft++) = {ShaftU};  Transfinite Surface{lShaft}; Recombine Surface{lShaft};
+	Plane Surface(lShaft++) = {ShaftU};  Transfinite Surface{lShaft}; Recombine Surface{lShaft}; ShaftS_U = lShaft;
 	Line loop(lShaft++) = lowerMCenter[]; ShaftL = lShaft;
-	Plane Surface(lShaft++) = {ShaftL};  Transfinite Surface{lShaft}; Recombine Surface{lShaft};
+	Plane Surface(lShaft++) = {ShaftL};  Transfinite Surface{lShaft}; Recombine Surface{lShaft}; ShaftS_L = lShaft;
 	/* ---- End structured mesh generation ---- */
 /* ---- End Center Shaft Generation ---- */
 /* ---- Rotor Mesh ---- */
@@ -193,7 +196,7 @@ EndFor
 	StaticRotorPoint[]+=StaticRotorPoint[0];
 	Line (lRotor) = RotateRotorPoint[]; Transfinite Line (lRotor) = nPointRotor; temp = lRotor;
 	Line loop(lRotor++) = {temp}; llRotor = lRotor; Printf(" %g ",llRotor);
-	Plane Surface (lRotor++) = {llRotor, aHole[], Shaft};
+	Plane Surface (lRotor++) = {llRotor, aHole[], Shaft}; RotorS = lRotor;
 	Line (lRotor++) = StaticRotorPoint[]; Transfinite Line (lRotor) = nPointRotor; temp = lRotor;
 	Line loop (lRotor++) = temp; StaticRotorLine = lRotor;
 	Plane Surface (lRotor++) = {StaticRotorLine, llRotor};
@@ -218,7 +221,54 @@ Line (ffline++)	= fWallU[]; lWallU = ffline; Transfinite Line {lWallU} = nPointF
 Line (ffline++)	= fWallL[]; lWallL = ffline; Transfinite Line {lWallL} = nPointFar;
 
 Line loop (ffline++) = {lInlet, lWallL, lOulet,-lWallU}; temp = ffline;
-Plane Surface(ffline++) = {temp, StaticRotorLine};
+Plane Surface(ffline++) = {temp, StaticRotorLine}; farfieldS = ffline; StRotorS = ffline;
+
+/* ---- Extrusion ----*/
+FaB[]={};
+For i In {1:nBlades} // First Extrusion!!
+AirfoilS~{i} = {};
+AirfoilS~{i} = Extrude {0,0,lenghtZ}{
+	Surface {Airfoil~{i}[]};
+	Layers {dz};
+	Recombine;
+};
+Physical Surface (i) = {AirfoilS~{i}[2],AirfoilS~{i}[8]};
+FaB+=AirfoilS~{i}[6];FaB+=AirfoilS~{i}[0];FaB+=Airfoil~{i}[];
+EndFor
+ShaftWall[]= {};
+ShaftWall[]= Extrude {0,0,lenghtZ}{
+	Surface {ShaftS_U, ShaftS_L};
+	Layers {dz};
+	Recombine;
+};
+Physical Surface ("Shaft") = {ShaftWall[3], ShaftWall[11]};
+Farfield[] = {};
+Farfield[] = Extrude {0,0,lenghtZ}{
+	Surface {farfieldS};
+	Layers {dz};
+	Recombine;
+};
+Rotor[] = {};
+Rotor[] = Extrude {0,0,lenghtZ}{
+	Surface{RotorS};
+	Layers {dz};
+	Recombine;
+};
+Extrude {0,0,lenghtZ}{
+	Surface{StRotorS};
+	Layers {dz};
+	Recombine;
+};
+Physical Surface ("AMI-Rt") = {Rotor[2]};
+Physical Surface ("FrontAndBack") = {Farfield[0], farfieldS, FaB[], ShaftWall[0], ShaftWall[6], ShaftS_L, ShaftS_U, RotorS, Rotor[0]};
+Physical Surface ("Inlet") = {Farfield[2]};
+Physical Surface ("Lat-Wall") = {Farfield[3], Farfield[5]};
+Physical Surface ("Outlet") = {Farfield[4]};
+Physical Surface ("AMI-St") = {Farfield[6]};
+
+
+
+
 
 
 
