@@ -21,9 +21,11 @@ Thickness=18;//maximun thickness of the airfoil in % of Chord (if XX = 12 then t
 nPointCenter	= 30;		// number of points for center shaft
 rMesh		= 1/4;		// ratio mesh - if rMesh = 1/4 then Mesh radius = (1+1/4)rRotor
 nPoint		= 50; 		// number of points to divide the Chord
+nPointRotor 	= 100;		// number of points to divede de rotational mesh line loop
 nearBlade	= 1/2*Chord;	// Near blade zone - structured mesh zone - 
 nearRotor	= 1.5*rRotor;	// Near Rotor zone - rotation mesh zone -  !! nearRotor > rRotor !!
-nearShaft	= 1.5*rCenter;	// Near Shaft zone - structured mesh zone -!! nearShaft > rCenter !!
+nearShaft	= 1.5	;	// Near Shaft zone - structured mesh zone -!! nearShaft > 1 !!
+dx 		= 0.5;//Chord/nPoint;	// Diference between staticMeshRotor and rotationMeshRotor
 
 /* NACA equation constants */
 
@@ -105,9 +107,9 @@ For alpha In {0:1.999*Pi:2*Pi/nBlades}
 	EndFor
 		Point(count++)={Chord+nearBlade,0,0};upperPointMesh[]+=count;lowerPointMesh[]+=count;
 
-		Line(fline++) = upperPointMesh[]; Transfinite Line {fline}=nPoint; upperMesh[]+=-fline; temp = fline; Printf("%g",fline);
-		Line(fline++) = lowerPointMesh[]; Transfinite Line {fline}=nPoint; lowerMesh[]+=fline; temp1 = fline; Printf("%g",fline);
-		Line loop(fline++) = {-temp1, temp}; aHole[]+=fline; Printf("%g",aHole[Acont-1]);
+		Line(fline++) = upperPointMesh[]; Transfinite Line {fline}=nPoint; upperMesh[]+=-fline; temp = fline;
+		Line(fline++) = lowerPointMesh[]; Transfinite Line {fline}=nPoint; lowerMesh[]+=fline; temp1 = fline;
+		Line loop(fline++) = {-temp1, temp}; aHole[]+=fline;
 		Line(fline++) = {upperPointMesh[0],upperSurface[0]}; upperMesh[]+=fline; lowerMesh[]+=-fline ; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2;
 
 		Line(fline++) = {upperSurface[nPoint],upperPointMesh[nPoint]}; upperMesh[]+=fline; lowerMesh[]+=-fline;Transfinite Line {fline}=nPoint/2 Using Progression 1.2;
@@ -134,35 +136,36 @@ pCenter= newp;
 pShaft = newp;
 lShaft = newl;
 
-upperSCenter[]={};
-lowerSCenter[]={};
-upperPCenter[]={};
-lowerPCenter[]={};
-upperMCenter[]={};
-lowerMCenter[]={};
+upperSCenter[]={}; //Shaft Point array
+lowerSCenter[]={}; //Shaft Point array
+upperPCenter[]={}; //Mesh Point array
+lowerPCenter[]={}; //Mesh Point array
+upperMCenter[]={}; //Mesh Line array
+lowerMCenter[]={}; //Mesh Line array
 temp = 1;
 For alpha In {-Pi/2:Pi/2:Pi/nPointCenter}
-	If (Cos(alpha)==0)
-		Point(pShaft++)={ rCenter*Sin(alpha), rCenter*Cos(alpha), 0}; upperSCenter[]+=pShaft; lowerSCenter[]+=pShaft;
-		Point(pShaft++)={ nearShaft*Sin(alpha), nearShaft*Cos(alpha), 0}; upperPCenter[]+=pShaft; lowerPCenter[]+=pShaft;
+		x = rCenter*Sin(alpha);
+		y = rCenter*Cos(alpha);
+	If ((y<=1e-10))
+		Point(pShaft++)={ x, y, 0}; upperSCenter[]+=pShaft; lowerSCenter[]+=pShaft;
+		Point(pShaft++)={ nearShaft*x, nearShaft*y, 0}; upperPCenter[]+=pShaft; lowerPCenter[]+=pShaft;
 	EndIf
-	If (Cos(alpha)!=0)
-		Point(pShaft++)={ rCenter*Sin(alpha), rCenter*Cos(alpha), 0}; upperSCenter[]+=pShaft;
-		Point(pShaft++)={-rCenter*Sin(alpha),-rCenter*Cos(alpha), 0}; lowerSCenter[]+=pShaft;
-		Point(pShaft++)={ nearShaft*Sin(alpha), nearShaft*Cos(alpha), 0}; upperPCenter[]+=pShaft;
-		Point(pShaft++)={-nearShaft*Sin(alpha),-nearShaft*Cos(alpha), 0}; lowerPCenter[]+=pShaft;
+	If (y>1e-10)
+		Point(pShaft++)={ x, y, 0}; upperSCenter[]+=pShaft;
+		Point(pShaft++)={ x,-y, 0}; lowerSCenter[]+=pShaft;
+		Point(pShaft++)={ nearShaft*x, nearShaft*y, 0}; upperPCenter[]+=pShaft;
+		Point(pShaft++)={ nearShaft*x,-nearShaft*y, 0}; lowerPCenter[]+=pShaft;
 	EndIf
 EndFor
 	/* ----- Line loops and Surfaces generation -----*/
-	Line (lShaft++)={upperSCenter[0],upperPCenter[0]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2;  upperMCenter[]+=-lShaft;
-	Line (lShaft++)={upperSCenter[nPointCenter],upperPCenter[nPointCenter]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2; upperMCenter[]+= lShaft;
-	Line (lShaft++)={lowerSCenter[0],lowerPCenter[0]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2;  lowerMCenter[]+= lShaft;
-	Line (lShaft++)={lowerSCenter[nPointCenter],lowerPCenter[nPointCenter]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2;  lowerMCenter[]+=- lShaft; 
+	Line (lShaft++)={upperSCenter[0],upperPCenter[0]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2;  upperMCenter[]+=-lShaft; lowerMCenter[]+= lShaft;
+	Line (lShaft++)={upperSCenter[nPointCenter],upperPCenter[nPointCenter]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2; upperMCenter[]+= lShaft;  lowerMCenter[]+=-lShaft;
+
 	Line (lShaft++)=upperSCenter[]; Transfinite Line{lShaft} = nPointCenter; upperMCenter[]+= lShaft; 
 	Line (lShaft++)=lowerSCenter[]; Transfinite Line{lShaft} = nPointCenter; lowerMCenter[]+=-lShaft; 
-	Line (lShaft++)=upperPCenter[]; temp = lShaft; Transfinite Line{lShaft} = nPointCenter; upperMCenter[]+=-lShaft; 
-	Line (lShaft++)=lowerPCenter[]; temp1= lShaft; Transfinite Line{lShaft} = nPointCenter; lowerMCenter[]+= lShaft; 
-	Line loop(lShaft++) = {-temp1, temp}; Shaft = lShaft; Printf(" %g ",Shaft);
+	Line (lShaft++)=upperPCenter[]; Transfinite Line{lShaft} = nPointCenter; upperMCenter[]+=-lShaft; temp = lShaft;
+	Line (lShaft++)=lowerPCenter[]; Transfinite Line{lShaft} = nPointCenter; lowerMCenter[]+= lShaft; temp1= lShaft;
+	Line loop(lShaft++) = {-temp1, temp}; Shaft = lShaft;
 	Line loop(lShaft++) = upperMCenter[]; ShaftU = lShaft;
 	Plane Surface(lShaft++) = {ShaftU};  Transfinite Surface{lShaft}; Recombine Surface{lShaft};
 	Line loop(lShaft++) = lowerMCenter[]; ShaftL = lShaft;
@@ -171,16 +174,24 @@ EndFor
 /* ---- End Center Shaft Generation ---- */
 /* ---- Rotor Mesh ---- */
 
-RotorPoint[]={};
+StaticRotorPoint[]={};
+RotateRotorPoint[]={};
 RotorMesh []={};
 
 pRotor = newp;
 lRotor = newl;
 For alpha In {0:2*Pi:Pi/nPoint}
-	Point(pRotor++)={ nearRotor*Sin(alpha), nearRotor*Cos(alpha), 0}; RotorPoint[]+=pRotor;
+	Point(pRotor++)={ nearRotor*Sin(alpha), nearRotor*Cos(alpha), 0}; RotateRotorPoint[]+=pRotor;
+	Point(pRotor++)={ nearRotor*(1+dx)*Sin(alpha), nearRotor*(1+dx)*Cos(alpha), 0}; StaticRotorPoint[]+=pRotor;
 EndFor
-	RotorPoint[]+=RotorPoint[0];
-	Line (lRotor) = RotorPoint[]; temp = lRotor;
-	Line loop(lRotor++) = {temp}; temp = lRotor;
-	Plane Surface (lRotor++) = {temp, aHole[], Shaft};
+	RotateRotorPoint[]+=RotateRotorPoint[0];
+	StaticRotorPoint[]+=StaticRotorPoint[0];
+	Line (lRotor) = RotateRotorPoint[]; Transfinite Line (lRotor) = nPointRotor; temp = lRotor;
+	Line loop(lRotor++) = {temp}; llRotor = lRotor; Printf(" %g ",llRotor);
+	Plane Surface (lRotor++) = {llRotor, aHole[], Shaft};
+	Line (lRotor++) = StaticRotorPoint[]; Transfinite Line (lRotor) = nPointRotor; temp = lRotor;
+	Line loop (lRotor++) = temp; temp = lRotor;
+	Plane Surface (lRotor++) = {temp, llRotor};
+
+
 
