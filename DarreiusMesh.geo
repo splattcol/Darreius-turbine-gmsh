@@ -45,7 +45,7 @@ a4 = -0.1036; //closed trailing edge!
 M  = Camber/100; 
 P  = PCamber/10;
 XX = Thickness/100;
-Printf ("Inicio generación Perfil");
+
 Acont=1;
 Airfoil[]={};
 aHole[]={};
@@ -195,11 +195,11 @@ EndFor
 	RotateRotorPoint[]+=RotateRotorPoint[0];
 	StaticRotorPoint[]+=StaticRotorPoint[0];
 	Line (lRotor) = RotateRotorPoint[]; Transfinite Line (lRotor) = nPointRotor; temp = lRotor;
-	Line loop(lRotor++) = {temp}; llRotor = lRotor; Printf(" %g ",llRotor);
+	Line loop(lRotor++) = {temp}; llRotor = lRotor;
 	Plane Surface (lRotor++) = {llRotor, aHole[], Shaft}; RotorS = lRotor;
 	Line (lRotor++) = StaticRotorPoint[]; Transfinite Line (lRotor) = nPointRotor; temp = lRotor;
 	Line loop (lRotor++) = temp; StaticRotorLine = lRotor;
-	Plane Surface (lRotor++) = {StaticRotorLine, llRotor};
+	Plane Surface (lRotor++) = {StaticRotorLine, llRotor}; StRotorS = lRotor;
 
 /* ---- Farfield ----*/
 
@@ -221,8 +221,7 @@ Line (ffline++)	= fWallU[]; lWallU = ffline; Transfinite Line {lWallU} = nPointF
 Line (ffline++)	= fWallL[]; lWallL = ffline; Transfinite Line {lWallL} = nPointFar;
 
 Line loop (ffline++) = {lInlet, lWallL, lOulet,-lWallU}; temp = ffline;
-Plane Surface(ffline++) = {temp, StaticRotorLine}; farfieldS = ffline; StRotorS = ffline;
-
+Plane Surface(ffline++) = {temp, StaticRotorLine}; farfieldS = ffline; 
 /* ---- Extrusion ----*/
 FaB[]={};
 For i In {1:nBlades} // First Extrusion!!
@@ -254,7 +253,7 @@ Rotor[] = Extrude {0,0,lenghtZ}{
 	Layers {dz};
 	Recombine;
 };
-Extrude {0,0,lenghtZ}{
+Add[] = Extrude {0,0,lenghtZ}{
 	Surface{StRotorS};
 	Layers {dz};
 	Recombine;
@@ -266,12 +265,4 @@ Physical Surface ("Lat-Wall") = {Farfield[3], Farfield[5]};
 Physical Surface ("Outlet") = {Farfield[4]};
 Physical Surface ("AMI-St") = {Farfield[6]};
 
-
-
-
-
-
-
-
-
-
+/* ---- END MESH ----*/
