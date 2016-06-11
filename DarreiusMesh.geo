@@ -25,7 +25,7 @@ nPointRotor 	= 100;		// number of points to divede de rotational mesh line loop
 nearBlade	= 1/2*Chord;	// Near blade zone - structured mesh zone - 
 nearRotor	= 1.5*rRotor;	// Near Rotor zone - rotation mesh zone -  !! nearRotor > rRotor !!
 nearShaft	= 1.5	;	// Near Shaft zone - structured mesh zone -!! nearShaft > 1 !!
-dx 		= 0.5;//Chord/nPoint;	// Diference between staticMeshRotor and rotationMeshRotor
+dx 		= Chord/nPoint;	// Diference between staticMeshRotor and rotationMeshRotor
 
 /* NACA equation constants */
 
