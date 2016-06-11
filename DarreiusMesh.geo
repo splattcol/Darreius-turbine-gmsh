@@ -12,20 +12,25 @@ rCenter = 0.005;// Center shaft radius
 
 /* NACA parameters (NACA MPXX)*/
 
-Chord 	= 0.032; // Chord lenght (m)
-Camber 	= 2; // maximun camber in % of Chord ( if M = 2 then maximun camber = 2*Chord/100)
-PCamber	= 4;// position of the maximun camber (if P = 1 then position = 1*Chord/10)
-Thickness=18;//maximun thickness of the airfoil in % of Chord (if XX = 12 then thickness = 12*Chord/100)
+Chord 	= 0.032;	// Chord length (m)
+Camber 	= 2; 		// maximun camber in % of Chord ( if M = 2 then maximun camber = 2*Chord/100)
+PCamber	= 4;		// position of the maximun camber (if P = 1 then position = 1*Chord/10)
+Thickness=18;		//maximun thickness of the airfoil in % of Chord (if XX = 12 then thickness = 12*Chord/100)
 
 /* ---- Mesh parameters ----*/
-nPointCenter	= 30;		// number of points for center shaft
+nPointCenter	= 10;		// Shaft nPoint
+nPoint		= 50; 		// Chord nPoint
+nPointRotor 	= 120;		// RotateMesh nPoint
+nPointFar 	= 50;		// Farfield nPoint
+nPointInletOulet= 100;		// Inlet-Oulet nPoint
 rMesh		= 1/4;		// ratio mesh - if rMesh = 1/4 then Mesh radius = (1+1/4)rRotor
-nPoint		= 50; 		// number of points to divide the Chord
-nPointRotor 	= 100;		// number of points to divede de rotational mesh line loop
 nearBlade	= 1/2*Chord;	// Near blade zone - structured mesh zone - 
 nearRotor	= 1.5*rRotor;	// Near Rotor zone - rotation mesh zone -  !! nearRotor > rRotor !!
-nearShaft	= 1.5	;	// Near Shaft zone - structured mesh zone -!! nearShaft > 1 !!
-dx 		= Chord/nPoint;	// Diference between staticMeshRotor and rotationMeshRotor
+nearShaft	= 1.5;		// Near Shaft zone - structured mesh zone -!! nearShaft > 1 !!
+dx 		= 0.1; //Chord/nPoint;	// Diference between staticMeshRotor and rotationMeshRotor
+dInlet		= 0.35;		// length from {0,0,0} to Inlet (in -x)
+dOutlet		= 0.75;		// length from {0,0,0} to Outlet (in x)
+dWall		= 0.35;		// length from {0,0,0} to lateral walls
 
 /* NACA equation constants */
 
@@ -190,8 +195,33 @@ EndFor
 	Line loop(lRotor++) = {temp}; llRotor = lRotor; Printf(" %g ",llRotor);
 	Plane Surface (lRotor++) = {llRotor, aHole[], Shaft};
 	Line (lRotor++) = StaticRotorPoint[]; Transfinite Line (lRotor) = nPointRotor; temp = lRotor;
-	Line loop (lRotor++) = temp; temp = lRotor;
-	Plane Surface (lRotor++) = {temp, llRotor};
+	Line loop (lRotor++) = temp; StaticRotorLine = lRotor;
+	Plane Surface (lRotor++) = {StaticRotorLine, llRotor};
+
+/* ---- Farfield ----*/
+
+ffpoint	= newp;
+ffline	= newl;
+fInlet[]= {};
+fOulte[]= {};
+fWallU[]= {};
+fWallL[]= {};
+
+Point(ffpoint)	= {-dInlet, dWall, 0}; fInlet[]+=ffpoint; fWallU[]+=ffpoint;
+Point(ffpoint++)= {-dInlet,-dWall, 0}; fInlet[]+=ffpoint; fWallL[]+=ffpoint;
+Point(ffpoint++)= {dOutlet,-dWall, 0}; fOulte[]+=ffpoint; fWallL[]+=ffpoint;
+Point(ffpoint++)= {dOutlet, dWall, 0}; fOulte[]+=ffpoint; fWallU[]+=ffpoint;
+
+Line (ffline)	= fInlet[]; lInlet = ffline; Transfinite Line {lInlet} = nPointInletOulet;
+Line (ffline++)	= fOulte[]; lOulet = ffline; Transfinite Line {lOulet} = nPointInletOulet;
+Line (ffline++)	= fWallU[]; lWallU = ffline; Transfinite Line {lWallU} = nPointFar;
+Line (ffline++)	= fWallL[]; lWallL = ffline; Transfinite Line {lWallL} = nPointFar;
+
+Line loop (ffline++) = {lInlet, lWallL, lOulet,-lWallU}; temp = ffline;
+Plane Surface(ffline++) = {temp, StaticRotorLine};
+
+
+
 
 
 
