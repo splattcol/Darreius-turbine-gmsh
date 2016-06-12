@@ -1,0 +1,78 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  3.0.1                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       polyBoundaryMesh;
+    location    "constant/polyMesh";
+    object      boundary;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+8
+(
+    Back
+    {
+        type            patch;
+        physicalType    patch;
+        nFaces          88101;
+        startFace       136937;
+    }
+    Front
+    {
+        type            patch;
+        physicalType    patch;
+        nFaces          89545;
+        startFace       225038;
+    }
+    patch2
+    {
+        type            patch;
+        physicalType    patch;
+        nFaces          1444;
+        startFace       314583;
+    }
+    blades
+    {
+        type            patch;
+        physicalType    patch;
+        nFaces          304;
+        startFace       316027;
+    }
+    latWalls
+    {
+        type            patch;
+        physicalType    patch;
+        nFaces          78;
+        startFace       316331;
+    }
+    Inlet
+    {
+        type            patch;
+        physicalType    patch;
+        nFaces          59;
+        startFace       316409;
+    }
+    outlet
+    {
+        type            patch;
+        physicalType    patch;
+        nFaces          59;
+        startFace       316468;
+    }
+    center
+    {
+        type            patch;
+        physicalType    patch;
+        nFaces          37;
+        startFace       316527;
+    }
+)
+
+// ************************************************************************* //
