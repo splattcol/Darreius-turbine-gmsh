@@ -31,7 +31,7 @@ dx 		= 0.1; //Chord/nPoint;	// Diference between staticMeshRotor and rotationMes
 dInlet		= 0.35;		// length from {0,0,0} to Inlet (in -x)
 dOutlet		= 0.75;		// length from {0,0,0} to Outlet (in x)
 dWall		= 0.35;		// length from {0,0,0} to lateral walls
-lenghtZ		= 0.1; 		// lenght for Extrusion
+lenghtZ		= 0.01; 		// lenght for Extrusion
 dz		= 1;		// number of Extrusion's layers
 
 
@@ -272,6 +272,6 @@ Physical Surface ("Outlet") = {Farfield[4]};
 Physical Surface ("AMI-St") = {Farfield[6]};
 Physical Surface ("Shaft") = {ShaftWall[3], ShaftWall[11]};
 
-Physical Volume ("Internal") = {Avolume[], ShaftWall[1], ShaftWall[7], Farfield[1], Rotor[1], Add[1] };
-
+Physical Volume ("Internal") = {Farfield[1], Add[1] };
+Physical Volume ("RotateMesh") = {Avolume[], ShaftWall[1], ShaftWall[7], Rotor[1]};
 /* ---- END MESH ----*/
