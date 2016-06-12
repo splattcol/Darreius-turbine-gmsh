@@ -224,6 +224,7 @@ Line loop (ffline++) = {lInlet, lWallL, lOulet,-lWallU}; temp = ffline;
 Plane Surface(ffline++) = {temp, StaticRotorLine}; farfieldS = ffline; 
 /* ---- Extrusion ----*/
 FaB[]={};
+Avolume[]={};
 For i In {1:nBlades} // First Extrusion!!
 AirfoilS~{i} = {};
 AirfoilS~{i} = Extrude {0,0,lenghtZ}{
@@ -233,30 +234,36 @@ AirfoilS~{i} = Extrude {0,0,lenghtZ}{
 };
 Physical Surface (i) = {AirfoilS~{i}[2],AirfoilS~{i}[8]};
 FaB+=AirfoilS~{i}[6];FaB+=AirfoilS~{i}[0];FaB+=Airfoil~{i}[];
+Avolume[]+=AirfoilS~{i}[1]; Avolume[]+=AirfoilS~{i}[7];
 EndFor
+
 ShaftWall[]= {};
 ShaftWall[]= Extrude {0,0,lenghtZ}{
 	Surface {ShaftS_U, ShaftS_L};
 	Layers {dz};
 	Recombine;
 };
+
 Farfield[] = {};
 Farfield[] = Extrude {0,0,lenghtZ}{
 	Surface {farfieldS};
 	Layers {dz};
 	Recombine;
 };
+
 Rotor[] = {};
 Rotor[] = Extrude {0,0,lenghtZ}{
 	Surface{RotorS};
 	Layers {dz};
 	Recombine;
 };
+
 Add[] = Extrude {0,0,lenghtZ}{
 	Surface{StRotorS};
 	Layers {dz};
 	Recombine;
 };
+
 Physical Surface ("AMI-Rt") = {Rotor[2]};
 Physical Surface ("FrontAndBack") = {Farfield[0], farfieldS, FaB[], ShaftWall[0], ShaftWall[6], ShaftS_L, ShaftS_U, RotorS, Rotor[0]};
 Physical Surface ("Inlet") = {Farfield[2]};
@@ -264,5 +271,7 @@ Physical Surface ("Lat-Wall") = {Farfield[3], Farfield[5]};
 Physical Surface ("Outlet") = {Farfield[4]};
 Physical Surface ("AMI-St") = {Farfield[6]};
 Physical Surface ("Shaft") = {ShaftWall[3], ShaftWall[11]};
+
+Physical Volume ("Internal") = {Avolume[], ShaftWall[1], ShaftWall[7], Farfield[1], Rotor[1], Add[1] };
 
 /* ---- END MESH ----*/
