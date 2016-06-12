@@ -264,12 +264,12 @@ Add[] = Extrude {0,0,lenghtZ}{
 	Recombine;
 };
 
-Physical Surface ("AMI-Rt") = {Rotor[2]};
+Physical Surface ("AMI-Rt") = {Add[3]};
+Physical Surface ("AMI-St") = {Add[2]};
 Physical Surface ("FrontAndBack") = {Farfield[0], farfieldS, FaB[], ShaftWall[0], ShaftWall[6], ShaftS_L, ShaftS_U, RotorS, Rotor[0]};
 Physical Surface ("Inlet") = {Farfield[2]};
 Physical Surface ("Lat-Wall") = {Farfield[3], Farfield[5]};
 Physical Surface ("Outlet") = {Farfield[4]};
-Physical Surface ("AMI-St") = {Farfield[6]};
 Physical Surface ("Shaft") = {ShaftWall[3], ShaftWall[11]};
 
 Physical Volume ("Internal") = {Farfield[1], Add[1] };

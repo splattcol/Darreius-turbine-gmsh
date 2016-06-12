@@ -21,53 +21,59 @@ internalField   uniform 0.00325;
 
 boundaryField
 {
-	Inlet
-	{
-        type            fixedValue;
-        value           $internalField;
-	}
-	outlet
-	{
-        type            inletOutlet;
-        inletValue      $internalField;
-        value           $internalField;
-	}
-	ami
-	{ 
-		type 			cyclicAMI;
-		value 			$internalField; 
-	}
-	ami1
-	{ 
-		type 			cyclicAMI;
-		value 			$internalField; 
-	}
-    blades
-    {
-        type            kqRWallFunction;
+Inlet
+{
+	type            fixedValue;
+	value           $internalField;
+}
+Outlet
+{
+	type            inletOutlet;
+	inletValue      $internalField;
+	value           $internalField;
+}
+FrontAndBack
+{
+	type            empty;
+}
+Lat-Wall
+{
+       	type            empty;
+}
+AMI-St
+{ 
+	type 			cyclicAMI;
+	value 			$internalField; 
+}
+AMI-Rt
+{ 
+	type 			cyclicAMI;
+	value 			$internalField; 
+}
+Airfoil_1
+{
+	type            kqRWallFunction;
         value           uniform 0.00325;
-    }
-    center
-    {
-        type            kqRWallFunction;
-        value           uniform 0.00325;
-    }
-    Front
-    {
-        type            empty;
-    }
-    Back
-    {
-        type            empty;
-    }
-    patch2
-    {
-        type            empty;
-    }
-    latWalls
-    {
-        type            empty;
-    }
+}
+Airfoil_2
+{
+	type            kqRWallFunction;
+	value           uniform 0.00325;
+}
+Airfoil_3
+{
+	type            kqRWallFunction;
+	value           uniform 0.00325;
+}
+Shaft
+{
+	type            kqRWallFunction;
+	value           uniform 0.00325;
+}
+defaultFaces
+{
+	type            empty;
+}
 }
 
 

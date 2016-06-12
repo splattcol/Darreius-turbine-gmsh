@@ -20,53 +20,55 @@ internalField   uniform 0;
 
 boundaryField
 {
-	Inlet
-	{
-        type            fixedValue;
-        value           $internalField;
-	}
-	outlet
-	{
-        type            inletOutlet;
-        inletValue      $internalField;
-        value           $internalField;
-	}
-	ami
-	{ 
-		type 			cyclicAMI;
-		value 			$internalField; 
-	}  
-	ami1
-	{ 
-		type 			cyclicAMI;
-		value 			$internalField; 
-	} 
-	blades
-    {
-        type            zeroGradient;
-    }
-
-    center
-    {
-        type            zeroGradient;
-    }
-
-    Front
-    {
-        type            empty;
-    }
-    Back
-    {
-        type            empty;
-    }
-    patch2
-    {
-        type            empty;
-    }
-    latWalls
-    {
-        type            empty;
-    }
+Inlet
+{
+	type            fixedValue;
+	value           $internalField;
+}
+Outlet
+{
+	type            inletOutlet;
+	inletValue      $internalField;
+	value           $internalField;
+}
+FrontAndBack
+{
+	type            empty;
+}
+Lat-Wall
+{
+       	type            empty;
+}
+AMI-St
+{ 
+	type 			cyclicAMI;
+	value 			$internalField; 
+}
+AMI-Rt
+{ 
+	type 			cyclicAMI;
+	value 			$internalField; 
+}
+Airfoil_1
+{
+	type            zeroGradient;
+}
+Airfoil_2
+{
+	type            zeroGradient;
+}
+Airfoil_3
+{
+	type            zeroGradient;
+}
+Shaft
+{
+	type            zeroGradient;
+}
+defaultFaces
+{
+	type            empty;
+}
 }
 
 // ************************************************************************* //

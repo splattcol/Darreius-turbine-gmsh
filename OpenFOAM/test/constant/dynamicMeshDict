@@ -21,7 +21,7 @@ motionSolverLibs ( "libfvMotionSolvers.so" );
 
 solidBodyMotionFvMeshCoeffs
 {
-    cellZone        rotorvolume;
+    cellZone        RotateMesh;
 
     solidBodyMotionFunction  rotatingMotion;
     rotatingMotionCoeffs
