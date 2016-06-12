@@ -240,7 +240,6 @@ ShaftWall[]= Extrude {0,0,lenghtZ}{
 	Layers {dz};
 	Recombine;
 };
-Physical Surface ("Shaft") = {ShaftWall[3], ShaftWall[11]};
 Farfield[] = {};
 Farfield[] = Extrude {0,0,lenghtZ}{
 	Surface {farfieldS};
@@ -264,5 +263,6 @@ Physical Surface ("Inlet") = {Farfield[2]};
 Physical Surface ("Lat-Wall") = {Farfield[3], Farfield[5]};
 Physical Surface ("Outlet") = {Farfield[4]};
 Physical Surface ("AMI-St") = {Farfield[6]};
+Physical Surface ("Shaft") = {ShaftWall[3], ShaftWall[11]};
 
 /* ---- END MESH ----*/
