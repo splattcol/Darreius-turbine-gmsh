@@ -57,12 +57,12 @@ boundaryField
     AMI-St
     {
         type            cyclicAMI;
-        value           uniform 0;
+        value           $internalField;
     }
     AMI-Rt
     {
         type            cyclicAMI;
-        value           uniform 0;
+        value           $internalField;
     }
 }
 

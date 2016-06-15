@@ -1,4 +1,5 @@
 *~
 *.pos
+*.msh
 .*
 !.gitignore

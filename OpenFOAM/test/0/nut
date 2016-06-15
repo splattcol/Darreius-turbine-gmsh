@@ -17,7 +17,7 @@ FoamFile
 
 dimensions      [0 2 -1 0 0 0 0];
 
-internalField   uniform 0.14;
+internalField   uniform 0;
 
 boundaryField
 {
@@ -27,50 +27,48 @@ boundaryField
     }
     patch1
     {
-        type            nutUSpaldingWallFunction;
+        type            nutkWallFunction;
         value           uniform 0;
     }
     patch2
     {
-        type            nutUSpaldingWallFunction;
+        type            nutkWallFunction;
         value           uniform 0;
     }
     patch3
     {
-        type            nutUSpaldingWallFunction;
+        type            nutkWallFunction;
         value           uniform 0;
     }
     Shaft
     {
-        type            nutUSpaldingWallFunction;
+        type            nutkWallFunction;
         value           uniform 0;
     }
     Inlet
     {
-        type            freestream;
-        freestreamValue uniform 0.14;
-        value           uniform 0.14;
+        type            calculated;
+        value           uniform 0;
     }
     Lat-Wall
     {
-        type            nutUSpaldingWallFunction;
+        type            nutkWallFunction;
         value           uniform 0;
     }
     Outlet
     {
-        type            freestream;
-        freestreamValue uniform 0.14;
-        value           uniform 0.14;
+        type            calculated;
+        value           uniform 0;
     }
     AMI-St
     {
         type            cyclicAMI;
-        value           uniform 0;
+        value           $internalField;
     }
     AMI-Rt
     {
         type            cyclicAMI;
-        value           uniform 0;
+        value           $internalField;
     }
 }
 

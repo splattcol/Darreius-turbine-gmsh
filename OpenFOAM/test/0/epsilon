@@ -9,15 +9,15 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       volVectorField;
+    class       volScalarField;
     location    "0";
-    object      U;
+    object      epsilon;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 1 -1 0 0 0 0];
+dimensions      [0 2 -3 0 0 0 0];
 
-internalField   uniform (0 0 0);
+internalField   uniform 0.0495;
 
 boundaryField
 {
@@ -27,49 +27,49 @@ boundaryField
     }
     patch1
     {
-        type            movingWallVelocity;
-        value           uniform (0 0 0);
+        type            epsilonWallFunction;
+        value           $internalField;
     }
     patch2
     {
-        type            movingWallVelocity;
-        value           uniform (0 0 0);
+        type            epsilonWallFunction;
+        value           $internalField;
     }
     patch3
     {
-        type            movingWallVelocity;
-        value           uniform (0 0 0);
+        type            epsilonWallFunction;
+        value           $internalField;
     }
     Shaft
     {
-        type            movingWallVelocity;
-        value           uniform (0 0 0);
+        type            epsilonWallFunction;
+        value           $internalField;
     }
     Inlet
     {
         type            fixedValue;
-        value           uniform (-5 0 0);
+        value           $internalField;
     }
     Lat-Wall
     {
-        type            movingWallVelocity;
-        value           uniform (-5 0 0);
+        type            epsilonWallFunction;
+        value           $internalField;
     }
     Outlet
     {
         type            inletOutlet;
-        inletValue      uniform (-5 0 0);
-        value           uniform (-5 0 0);
+        inletValue      $internalField;
+        value           $internalField;
     }
     AMI-St
     {
         type            cyclicAMI;
-        value            $internalField;
+        value           $internalField;
     }
     AMI-Rt
     {
         type            cyclicAMI;
-        value            $internalField;
+        value           $internalField;
     }
 }
 
