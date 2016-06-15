@@ -10,6 +10,7 @@ FoamFile
     version     2.0;
     format      ascii;
     class       volVectorField;
+    location    "0";
     object      U;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -20,57 +21,58 @@ internalField   uniform (0 0 0);
 
 boundaryField
 {
-Inlet
-{
-	type            fixedValue;
-	value		uniform (5 0 0);
-}
-Outlet
-{
-	type            zeroGradient;
-}
-FrontAndBack
-{
-	type            empty;
-}
-Lat-Wall
-{
-       	type            empty;
-}
-AMI-St
-{ 
-	type 			cyclicAMI;
-	value 			$internalField; 
-}
-AMI-Rt
-{ 
-	type 			cyclicAMI;
-	value 			$internalField; 
-}
-Airfoil_1
-{
-	type            fixedValue;
+    FrontAndBack
+    {
+        type            empty;
+    }
+    patch1
+    {
+        type            fixedValue;
         value           uniform (0 0 0);
-}
-Airfoil_2
-{
-	type            fixedValue;
+    }
+    patch2
+    {
+        type            fixedValue;
         value           uniform (0 0 0);
-}
-Airfoil_3
-{
-	type            fixedValue;
+    }
+    patch3
+    {
+        type            fixedValue;
         value           uniform (0 0 0);
-}
-Shaft
-{
-	type            fixedValue;
+    }
+    Shaft
+    {
+        type            fixedValue;
         value           uniform (0 0 0);
+    }
+    Inlet
+    {
+        type            freestream;
+        freestreamValue uniform (-5 0 0);
+        value           uniform (-5 0 0);
+    }
+    Lat-Wall
+    {
+        type            fixedValue;
+        value           uniform (-5 0 0);
+    }
+    Outlet
+    {
+        type		inletOutlet;
+        inletValue	uniform (-5 0 0);
+        value           uniform (-5 0 0);
+    }
+    AMI-St
+    {
+        type            cyclicAMI;
+        value           uniform (0 0 0);
+    }
+    AMI-Rt
+    {
+        type            cyclicAMI;
+        value           uniform (0 0 0);
+    }
 }
-defaultFaces
-{
-	type            empty;
-}
-}
+
 
 // ************************************************************************* //

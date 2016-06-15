@@ -10,65 +10,69 @@ FoamFile
     version     2.0;
     format      ascii;
     class       volScalarField;
+    location    "0";
     object      nuTilda;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 dimensions      [0 2 -1 0 0 0 0];
 
-internalField   uniform 0;
+internalField   uniform 0.14;
 
 boundaryField
 {
-Inlet
-{
-	type            fixedValue;
-	value           $internalField;
+    FrontAndBack
+    {
+        type            empty;
+    }
+    patch1
+    {
+        type            fixedValue;
+        value           uniform 0;
+    }
+    patch2
+    {
+        type            fixedValue;
+        value           uniform 0;
+    }
+    patch3
+    {
+        type            fixedValue;
+        value           uniform 0;
+    }
+    Shaft
+    {
+        type            fixedValue;
+        value           uniform 0;
+    }
+    Inlet
+    {
+        type            freestream;
+        freestreamValue uniform 0.14;
+        value           uniform 0.14;
+    }
+    Lat-Wall
+    {
+        type            fixedValue;
+        value           uniform 0;
+    }
+    Outlet
+    {
+        type            freestream;
+        freestreamValue uniform 0.14;
+        value           uniform 0.14;
+    }
+    AMI-St
+    {
+        type            cyclicAMI;
+        value           uniform 0;
+    }
+    AMI-Rt
+    {
+        type            cyclicAMI;
+        value           uniform 0;
+    }
 }
-Outlet
-{
-	type            inletOutlet;
-	inletValue      $internalField;
-	value           $internalField;
-}
-FrontAndBack
-{
-	type            empty;
-}
-Lat-Wall
-{
-       	type            empty;
-}
-AMI-St
-{ 
-	type 			cyclicAMI;
-	value 			$internalField; 
-}
-AMI-Rt
-{ 
-	type 			cyclicAMI;
-	value 			$internalField; 
-}
-Airfoil_1
-{
-	type            zeroGradient;
-}
-Airfoil_2
-{
-	type            zeroGradient;
-}
-Airfoil_3
-{
-	type            zeroGradient;
-}
-Shaft
-{
-	type            zeroGradient;
-}
-defaultFaces
-{
-	type            empty;
-}
-}
+
 
 // ************************************************************************* //

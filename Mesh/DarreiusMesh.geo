@@ -22,16 +22,16 @@ nPointCenter	= 10;		// Shaft nPoint
 nPoint		= 50; 		// Chord nPoint
 nPointRotor 	= 120;		// RotateMesh nPoint
 nPointFar 	= 50;		// Farfield nPoint
-nPointInletOulet= 100;		// Inlet-Oulet nPoint
+nPointInletOulet= 80;		// Inlet-Oulet nPoint
 rMesh		= 1/4;		// ratio mesh - if rMesh = 1/4 then Mesh radius = (1+1/4)rRotor
 nearBlade	= 1/2*Chord;	// Near blade zone - structured mesh zone - 
 nearRotor	= 1.5*rRotor;	// Near Rotor zone - rotation mesh zone -  !! nearRotor > rRotor !!
 nearShaft	= 1.5;		// Near Shaft zone - structured mesh zone -!! nearShaft > 1 !!
-dx 		= 0.1; //Chord/nPoint;	// Diference between staticMeshRotor and rotationMeshRotor
+dx 		= 0.05;		// Diference between staticMeshRotor and rotationMeshRotor
 dInlet		= 0.35;		// length from {0,0,0} to Inlet (in -x)
 dOutlet		= 0.75;		// length from {0,0,0} to Outlet (in x)
 dWall		= 0.35;		// length from {0,0,0} to lateral walls
-lenghtZ		= 0.01; 		// lenght for Extrusion
+lenghtZ		= 0.005; 		// lenght for Extrusion
 dz		= 1;		// number of Extrusion's layers
 
 
@@ -199,7 +199,7 @@ EndFor
 	Plane Surface (lRotor++) = {llRotor, aHole[], Shaft}; RotorS = lRotor;
 	Line (lRotor++) = StaticRotorPoint[]; Transfinite Line (lRotor) = nPointRotor; temp = lRotor;
 	Line loop (lRotor++) = temp; StaticRotorLine = lRotor;
-	Plane Surface (lRotor++) = {StaticRotorLine, llRotor}; StRotorS = lRotor;
+	Plane Surface (lRotor++) = {StaticRotorLine, llRotor}; StRotorS = lRotor; Recombine Surface {lRotor};
 
 /* ---- Farfield ----*/
 
@@ -221,7 +221,7 @@ Line (ffline++)	= fWallU[]; lWallU = ffline; Transfinite Line {lWallU} = nPointF
 Line (ffline++)	= fWallL[]; lWallL = ffline; Transfinite Line {lWallL} = nPointFar;
 
 Line loop (ffline++) = {lInlet, lWallL, lOulet,-lWallU}; temp = ffline;
-Plane Surface(ffline++) = {temp, StaticRotorLine}; farfieldS = ffline; 
+Plane Surface(ffline++) = {temp, StaticRotorLine}; farfieldS = ffline;
 /* ---- Extrusion ----*/
 FaB[]={};
 Avolume[]={};
@@ -266,12 +266,13 @@ Add[] = Extrude {0,0,lenghtZ}{
 
 Physical Surface ("AMI-Rt") = {Add[3]};
 Physical Surface ("AMI-St") = {Add[2]};
-Physical Surface ("FrontAndBack") = {Farfield[0], farfieldS, FaB[], ShaftWall[0], ShaftWall[6], ShaftS_L, ShaftS_U, RotorS, Rotor[0]};
+Physical Surface ("FrontAndBack") = {Farfield[0], farfieldS, FaB[], ShaftWall[0], ShaftWall[6], ShaftS_L, ShaftS_U, RotorS, Rotor[0], Add[0],StRotorS};
 Physical Surface ("Inlet") = {Farfield[2]};
 Physical Surface ("Lat-Wall") = {Farfield[3], Farfield[5]};
 Physical Surface ("Outlet") = {Farfield[4]};
 Physical Surface ("Shaft") = {ShaftWall[3], ShaftWall[11]};
 
-Physical Volume ("Internal") = {Farfield[1], Add[1] };
+Physical Volume ("Farfield") = {Farfield[1]};
+Physical Volume ("AMI")	= { Add[1]};
 Physical Volume ("RotateMesh") = {Avolume[], ShaftWall[1], ShaftWall[7], Rotor[1]};
 /* ---- END MESH ----*/

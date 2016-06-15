@@ -15,11 +15,11 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-simulationType  RAS;
+simulationType RAS;
 
 RAS
 {
-    RASModel        kEpsilon;
+    RASModel        SpalartAllmaras;
 
     turbulence      on;
 
