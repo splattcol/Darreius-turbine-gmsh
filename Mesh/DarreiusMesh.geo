@@ -19,7 +19,7 @@ Thickness=18;		//maximun thickness of the airfoil in % of Chord (if XX = 12 then
 
 /* ---- Mesh parameters ----*/
 nPointCenter	= 10;		// Shaft nPoint
-nPoint		= 50; 		// Chord nPoint
+nPoint		= 25; 		// Chord nPoint
 nPointRotor 	= 120;		// RotateMesh nPoint
 nPointFar 	= 50;		// Farfield nPoint
 nPointInletOulet= 80;		// Inlet-Oulet nPoint
@@ -33,7 +33,7 @@ dOutlet		= 0.75;		// length from {0,0,0} to Outlet (in x)
 dWall		= 0.35;		// length from {0,0,0} to lateral walls
 lenghtZ		= 0.005;		// lenght for Extrusion
 dz		= 1;		// number of Extrusion's layers
-dh		= 0.1;		// point element zise
+dh		= dz*0.1;		// point element zise
 
 
 /* NACA equation constants */
@@ -183,24 +183,39 @@ EndFor
 /* ---- End Center Shaft Generation ---- */
 /* ---- Rotor Mesh ---- */
 
-StaticRotorPoint[]={};
-RotateRotorPoint[]={};
-RotorMesh []={};
-
+StaticRotorPointU[]={};
+StaticRotorPointL[]={};
+RotateRotorPointU[]={};
+RotateRotorPointL[]={};
+RotorMeshU[]={};
+RotorMeshL[]={};
 pRotor = newp;
 lRotor = newl;
-For alpha In {0:2*Pi:Pi/nPoint}
-	Point(pRotor++)={ nearRotor*Sin(alpha), nearRotor*Cos(alpha), 0, dh}; RotateRotorPoint[]+=pRotor;
-	Point(pRotor++)={ nearRotor*(1+dx)*Sin(alpha), nearRotor*(1+dx)*Cos(alpha), 0, dh}; StaticRotorPoint[]+=pRotor;
+For alpha In {-Pi/2:Pi/2:Pi/nPoint}	
+	If ((Cos(alpha)<=1e-10))
+		Point(pRotor++)={ nearRotor*Sin(alpha), nearRotor*Cos(alpha), 0, dh}; RotateRotorPointU[]+=pRotor; RotateRotorPointL[]+=pRotor;
+		Point(pRotor++)={ nearRotor*(1+dx)*Sin(alpha), nearRotor*(1+dx)*Cos(alpha), 0, dh}; StaticRotorPointU[]+=pRotor; StaticRotorPointL[]+=pRotor;
+	EndIf
+	If ((Cos(alpha)>1e-10))	
+		Point(pRotor++)={ nearRotor*Sin(alpha), nearRotor*Cos(alpha), 0, dh}; RotateRotorPointU[]+=pRotor;
+		Point(pRotor++)={ nearRotor*Sin(alpha),-nearRotor*Cos(alpha), 0, dh}; RotateRotorPointL[]+=pRotor;
+		Point(pRotor++)={ nearRotor*(1+dx)*Sin(alpha), nearRotor*(1+dx)*Cos(alpha), 0, dh}; StaticRotorPointU[]+=pRotor;
+		Point(pRotor++)={ nearRotor*(1+dx)*Sin(alpha),-nearRotor*(1+dx)*Cos(alpha), 0, dh}; StaticRotorPointL[]+=pRotor;
+	EndIf
 EndFor
-	RotateRotorPoint[]+=RotateRotorPoint[0];
-	StaticRotorPoint[]+=StaticRotorPoint[0];
-	Line (lRotor) = RotateRotorPoint[]; Transfinite Line (lRotor) = nPointRotor; temp = lRotor;
-	Line loop(lRotor++) = {temp}; llRotor = lRotor;
+	Line (lRotor) = {RotateRotorPointU[0],StaticRotorPointU[0]}; RotorMeshU[]+=lRotor; RotorMeshL[]+=lRotor; Transfinite Line {lRotor} = 3;
+	Line (lRotor++)={RotateRotorPointL[nPoint],StaticRotorPointL[nPoint]}; RotorMeshL[]+=-lRotor; RotorMeshU[]+=-lRotor; Transfinite Line {lRotor} = 3;
+	Line (lRotor++) = RotateRotorPointU[]; Transfinite Line (lRotor) = nPointRotor; rlRotorU = lRotor; RotorMeshU[]+=-lRotor;
+	Line (lRotor++) = RotateRotorPointL[]; Transfinite Line (lRotor) = nPointRotor; rlRotorL = lRotor; RotorMeshL[]+=-lRotor;
+	Line loop(lRotor++) = {rlRotorU, -rlRotorL}; llRotor = lRotor;
 	Plane Surface (lRotor++) = {llRotor, aHole[], Shaft}; RotorS = lRotor;
-	Line (lRotor++) = StaticRotorPoint[]; Transfinite Line (lRotor) = nPointRotor; temp = lRotor;
-	Line loop (lRotor++) = temp; StaticRotorLine = lRotor;
-	Plane Surface (lRotor++) = {StaticRotorLine, llRotor}; StRotorS = lRotor; Recombine Surface {lRotor};
+	Line (lRotor++) = StaticRotorPointU[]; Transfinite Line (lRotor) = nPointRotor; RotorMeshU[]+= lRotor;
+	Line (lRotor++) = StaticRotorPointL[]; Transfinite Line (lRotor) = nPointRotor; RotorMeshL[]+= lRotor;
+	Line loop (lRotor++) = RotorMeshU[]; temp = lRotor;
+	Plane Surface (lRotor++) = {temp}; StRotorU = lRotor; Transfinite Surface {lRotor}; Recombine Surface {lRotor};
+	Line loop (lRotor++) = RotorMeshL[]; temp = lRotor;
+	Plane Surface (lRotor++) = {temp}; StRotorL = lRotor; Transfinite Surface {lRotor}; Recombine Surface {lRotor};
+	Line loop (lRotor++) = {RotorMeshU[3],-RotorMeshL[3]}; StaticRotorLine = lRotor;
 
 /* ---- Farfield ----*/
 
@@ -218,8 +233,8 @@ Point(ffpoint++)= {dOutlet, dWall, 0, dh}; fOulte[]+=ffpoint; fWallU[]+=ffpoint;
 
 Line (ffline)	= fInlet[]; lInlet = ffline; Transfinite Line {lInlet} = nPointInletOulet;
 Line (ffline++)	= fOulte[]; lOulet = ffline; Transfinite Line {lOulet} = nPointInletOulet;
-Line (ffline++)	= fWallU[]; lWallU = ffline; Transfinite Line {lWallU} = nPointFar;
-Line (ffline++)	= fWallL[]; lWallL = ffline; Transfinite Line {lWallL} = nPointFar;
+Line (ffline++)	= fWallU[]; lWallU = ffline; Transfinite Line {lWallU} = nPointFar Using Bump 0.5;
+Line (ffline++)	= fWallL[]; lWallL = ffline; Transfinite Line {lWallL} = nPointFar Using Bump 0.5;
 
 Line loop (ffline++) = {lInlet, lWallL, lOulet,-lWallU}; temp = ffline;
 Plane Surface(ffline++) = {temp, StaticRotorLine}; farfieldS = ffline;
@@ -260,20 +275,20 @@ Rotor[] = Extrude {0,0,lenghtZ}{
 };
 
 Add[] = Extrude {0,0,lenghtZ}{
-	Surface{StRotorS};
+	Surface{StRotorU, StRotorL};
 	Layers {dz};
 	Recombine;
 };
 
-Physical Surface ("AMI-Rt") = {Add[3]};
-Physical Surface ("AMI-St") = {Add[2]};
-Physical Surface ("FrontAndBack") = {Farfield[0], farfieldS, FaB[], ShaftWall[0], ShaftWall[6], ShaftS_L, ShaftS_U, RotorS, Rotor[0], Add[0],StRotorS};
+Physical Surface ("AMI-St") = {Add[3], Add[9]};
+Physical Surface ("AMI-Rt") = {Add[5], Add[11]};
+Physical Surface ("FrontAndBack") = {Farfield[0], farfieldS, FaB[], ShaftWall[0], ShaftWall[6], ShaftS_L, ShaftS_U, RotorS, Rotor[0], Add[0], Add[6], StRotorU, StRotorL};
 Physical Surface ("Inlet") = {Farfield[2]};
 Physical Surface ("Lat-Wall") = {Farfield[3], Farfield[5]};
 Physical Surface ("Outlet") = {Farfield[4]};
 Physical Surface ("Shaft") = {ShaftWall[3], ShaftWall[11]};
 
 Physical Volume ("Farfield") = {Farfield[1]};
-Physical Volume ("AMI")	= { Add[1]};
+Physical Volume ("AMI")	= { Add[1], Add[7]};
 Physical Volume ("RotateMesh") = {Avolume[], ShaftWall[1], ShaftWall[7], Rotor[1]};
 /* ---- END MESH ----*/
