@@ -35,16 +35,17 @@ solvers
     p
     {
         $pcorr;
-        tolerance       1e-5;
+        tolerance       1e-06;
         relTol          0.01;
     }
 
     pFinal
     {
         $p;
-        tolerance       1e-6;
+        tolerance       1e-06;
         relTol          0;
     }
+
     U
     {
         solver          smoothSolver;
@@ -59,19 +60,12 @@ solvers
         tolerance       1e-06;
         relTol          0;
     }
-    "(k|epsilon)"
-    {
-        solver          smoothSolver;
-        smoother        symGaussSeidel;
-        tolerance       1e-6;
-        relTol          0.1;
-    }
 
-    "(k|epsilon)Final"
+    cellMotionUx
     {
-        solver          smoothSolver;
-        smoother        symGaussSeidel;
-        tolerance       1e-6;
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-08;
         relTol          0;
     }
 }
@@ -89,10 +83,10 @@ PIMPLE
 
 relaxationFactors
 {
-    "(U|k|epsilon).*"   1;
+    equations
+    {
+        "U.*"           1;
+    }
 }
-
-}
-
 
 // ************************************************************************* //

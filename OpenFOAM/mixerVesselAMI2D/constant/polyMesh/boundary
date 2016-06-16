@@ -19,73 +19,85 @@ FoamFile
 (
     FrontAndBack
     {
-        type            patch;
-        physicalType    patch;
+        type            empty;
+        physicalType    empty;
+        inGroups        1(empty);
         nFaces          69308;
-        startFace       55320;
+        startFace       55201;
     }
     patch1
     {
-        type            patch;
-        physicalType    patch;
+        type            wall;
+        physicalType    wall;
+        inGroups        1(wall);
         nFaces          98;
-        startFace       124628;
+        startFace       124509;
     }
     patch2
     {
-        type            patch;
-        physicalType    patch;
+        type            wall;
+        physicalType    wall;
+        inGroups        1(wall);
         nFaces          98;
-        startFace       124726;
+        startFace       124607;
     }
     patch3
     {
-        type            patch;
-        physicalType    patch;
+        type            wall;
+        physicalType    wall;
+        inGroups        1(wall);
         nFaces          98;
-        startFace       124824;
+        startFace       124705;
     }
     Shaft
     {
-        type            patch;
-        physicalType    patch;
+        type            wall;
+        physicalType    wall;
+        inGroups        1(wall);
         nFaces          18;
-        startFace       124922;
+        startFace       124803;
     }
     Inlet
     {
         type            patch;
         physicalType    patch;
         nFaces          79;
-        startFace       124940;
+        startFace       124821;
     }
     Lat-Wall
     {
-        type            patch;
-        physicalType    patch;
+        type            wall;
+        physicalType    wall;
+        inGroups        1(wall);
         nFaces          98;
-        startFace       125019;
+        startFace       124900;
     }
     Outlet
     {
         type            patch;
         physicalType    patch;
         nFaces          79;
-        startFace       125117;
+        startFace       124998;
     }
     AMI-St
     {
-        type            patch;
-        physicalType    patch;
-        nFaces          0;
-        startFace       125196;
+        type            cyclicAMI;
+        inGroups        1(cyclicAMI);
+        nFaces          119;
+        startFace       125077;
+        matchTolerance  0.0001;
+        transform       noOrdering;
+        neighbourPatch  AMI-Rt;
     }
     AMI-Rt
     {
-        type            patch;
-        physicalType    patch;
-        nFaces          0;
+        type            cyclicAMI;
+        inGroups        1(cyclicAMI);
+        nFaces          119;
         startFace       125196;
+        matchTolerance  0.0001;
+        transform       noOrdering;
+        neighbourPatch  AMI-St;
     }
 )
 

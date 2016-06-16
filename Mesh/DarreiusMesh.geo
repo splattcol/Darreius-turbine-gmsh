@@ -31,8 +31,9 @@ dx 		= 0.05;		// Diference between staticMeshRotor and rotationMeshRotor
 dInlet		= 0.35;		// length from {0,0,0} to Inlet (in -x)
 dOutlet		= 0.75;		// length from {0,0,0} to Outlet (in x)
 dWall		= 0.35;		// length from {0,0,0} to lateral walls
-lenghtZ		= 0.005; 		// lenght for Extrusion
+lenghtZ		= 0.005;		// lenght for Extrusion
 dz		= 1;		// number of Extrusion's layers
+dh		= 0.1;		// point element zise
 
 
 /* NACA equation constants */
@@ -76,14 +77,14 @@ For alpha In {0:1.999*Pi:2*Pi/nBlades}
 		xl = (x + yt*Sin(theta))*Chord;
 		yl = (yc - yt*Cos(theta))*Chord;
 		If (yu==yl)
-			Point(count++)={xu,yu,0};upperSurface[]+=count; lowerSurface[]+=count;
+			Point(count++)={xu,yu,0, dh};upperSurface[]+=count; lowerSurface[]+=count;
 		EndIf
 		If (yu!=yl)
-			Point(count++)={xu,yu,0};upperSurface[]+=count;
-			Point(count++)={xl,yl,0};lowerSurface[]+=count;
+			Point(count++)={xu,yu,0, dh};upperSurface[]+=count;
+			Point(count++)={xl,yl,0, dh};lowerSurface[]+=count;
 		EndIf
 	EndFor
-		Point(count++)={Chord,0,0};upperSurface[]+=count;lowerSurface[]+=count;
+		Point(count++)={Chord,0,0, dh};upperSurface[]+=count;lowerSurface[]+=count;
 	fline = newl;
 
 	upperMesh[]={}; // Lines for the upperMesh
@@ -106,14 +107,14 @@ For alpha In {0:1.999*Pi:2*Pi/nBlades}
 	
 		y = Sqrt(1-((x-1/2*Chord)/(nearBlade+1/2*Chord))^2)*(nearBlade+XX*Chord);
 		If (y==0)
-			Point(count++)={x, y,0};upperPointMesh[]+=count; lowerPointMesh[]+=count;
+			Point(count++)={x, y,0, dh};upperPointMesh[]+=count; lowerPointMesh[]+=count;
 		EndIf
 		If (y!=0)
-			Point(count++)={x, y,0};upperPointMesh[]+=count; 
-			Point(count++)={x,-y,0};lowerPointMesh[]+=count;
+			Point(count++)={x, y,0, dh};upperPointMesh[]+=count; 
+			Point(count++)={x,-y,0, dh};lowerPointMesh[]+=count;
 		EndIf
 	EndFor
-		Point(count++)={Chord+nearBlade,0,0};upperPointMesh[]+=count;lowerPointMesh[]+=count;
+		Point(count++)={Chord+nearBlade,0,0, dh};upperPointMesh[]+=count;lowerPointMesh[]+=count;
 
 		Line(fline++) = upperPointMesh[]; Transfinite Line {fline}=nPoint; upperMesh[]+=-fline; temp = fline;
 		Line(fline++) = lowerPointMesh[]; Transfinite Line {fline}=nPoint; lowerMesh[]+=fline; temp1 = fline;
@@ -155,14 +156,14 @@ For alpha In {-Pi/2:Pi/2:Pi/nPointCenter}
 		x = rCenter*Sin(alpha);
 		y = rCenter*Cos(alpha);
 	If ((y<=1e-10))
-		Point(pShaft++)={ x, y, 0}; upperSCenter[]+=pShaft; lowerSCenter[]+=pShaft;
-		Point(pShaft++)={ nearShaft*x, nearShaft*y, 0}; upperPCenter[]+=pShaft; lowerPCenter[]+=pShaft;
+		Point(pShaft++)={ x, y, 0, dh}; upperSCenter[]+=pShaft; lowerSCenter[]+=pShaft;
+		Point(pShaft++)={ nearShaft*x, nearShaft*y, 0, dh}; upperPCenter[]+=pShaft; lowerPCenter[]+=pShaft;
 	EndIf
 	If (y>1e-10)
-		Point(pShaft++)={ x, y, 0}; upperSCenter[]+=pShaft;
-		Point(pShaft++)={ x,-y, 0}; lowerSCenter[]+=pShaft;
-		Point(pShaft++)={ nearShaft*x, nearShaft*y, 0}; upperPCenter[]+=pShaft;
-		Point(pShaft++)={ nearShaft*x,-nearShaft*y, 0}; lowerPCenter[]+=pShaft;
+		Point(pShaft++)={ x, y, 0, dh}; upperSCenter[]+=pShaft;
+		Point(pShaft++)={ x,-y, 0, dh}; lowerSCenter[]+=pShaft;
+		Point(pShaft++)={ nearShaft*x, nearShaft*y, 0, dh}; upperPCenter[]+=pShaft;
+		Point(pShaft++)={ nearShaft*x,-nearShaft*y, 0, dh}; lowerPCenter[]+=pShaft;
 	EndIf
 EndFor
 	/* ----- Line loops and Surfaces generation -----*/
@@ -189,8 +190,8 @@ RotorMesh []={};
 pRotor = newp;
 lRotor = newl;
 For alpha In {0:2*Pi:Pi/nPoint}
-	Point(pRotor++)={ nearRotor*Sin(alpha), nearRotor*Cos(alpha), 0}; RotateRotorPoint[]+=pRotor;
-	Point(pRotor++)={ nearRotor*(1+dx)*Sin(alpha), nearRotor*(1+dx)*Cos(alpha), 0}; StaticRotorPoint[]+=pRotor;
+	Point(pRotor++)={ nearRotor*Sin(alpha), nearRotor*Cos(alpha), 0, dh}; RotateRotorPoint[]+=pRotor;
+	Point(pRotor++)={ nearRotor*(1+dx)*Sin(alpha), nearRotor*(1+dx)*Cos(alpha), 0, dh}; StaticRotorPoint[]+=pRotor;
 EndFor
 	RotateRotorPoint[]+=RotateRotorPoint[0];
 	StaticRotorPoint[]+=StaticRotorPoint[0];
@@ -210,10 +211,10 @@ fOulte[]= {};
 fWallU[]= {};
 fWallL[]= {};
 
-Point(ffpoint)	= {-dInlet, dWall, 0}; fInlet[]+=ffpoint; fWallU[]+=ffpoint;
-Point(ffpoint++)= {-dInlet,-dWall, 0}; fInlet[]+=ffpoint; fWallL[]+=ffpoint;
-Point(ffpoint++)= {dOutlet,-dWall, 0}; fOulte[]+=ffpoint; fWallL[]+=ffpoint;
-Point(ffpoint++)= {dOutlet, dWall, 0}; fOulte[]+=ffpoint; fWallU[]+=ffpoint;
+Point(ffpoint)	= {-dInlet, dWall, 0, dh}; fInlet[]+=ffpoint; fWallU[]+=ffpoint;
+Point(ffpoint++)= {-dInlet,-dWall, 0, dh}; fInlet[]+=ffpoint; fWallL[]+=ffpoint;
+Point(ffpoint++)= {dOutlet,-dWall, 0, dh}; fOulte[]+=ffpoint; fWallL[]+=ffpoint;
+Point(ffpoint++)= {dOutlet, dWall, 0, dh}; fOulte[]+=ffpoint; fWallU[]+=ffpoint;
 
 Line (ffline)	= fInlet[]; lInlet = ffline; Transfinite Line {lInlet} = nPointInletOulet;
 Line (ffline++)	= fOulte[]; lOulet = ffline; Transfinite Line {lOulet} = nPointInletOulet;

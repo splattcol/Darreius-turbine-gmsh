@@ -9,50 +9,39 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       dictionary;
-    location    "system";
-    object      fvSchemes;
+    class       faceSet;
+    location    "constant/polyMesh/sets";
+    object      skewFaces;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-ddtSchemes
-{
-    default         Euler;
-}
 
-gradSchemes
-{
-    default         Gauss linear;
-    grad(p)         Gauss linear;
-    grad(U)         Gauss linear 1;
-}
-
-divSchemes
-{
-    default         none;
-//    div(phi,U)      Gauss upwind;
-    div(phi,U)      Gauss linearUpwind grad(U);
-    div(phi,k)      Gauss upwind;
-    div(phi,epsilon) Gauss upwind;
-    div((nuEff*dev2(T(grad(U))))) Gauss linear;
-}
-
-laplacianSchemes
-{
-    default         Gauss linear limited corrected 0.33;
-}
-
-interpolationSchemes
-{
-    default         linear;
-    interpolate(HbyA) linear;
-}
-
-snGradSchemes
-{
-    default         limited corrected 0.33;
-}
-
-
+24
+(
+2329 
+2331 
+2333 
+2335 
+2337 
+2339 
+2341 
+2343 
+7033 
+7035 
+7037 
+7039 
+7041 
+7043 
+7045 
+7047 
+11737 
+11739 
+11741 
+11743 
+11745 
+11747 
+11749 
+11751 
+)
 
 // ************************************************************************* //

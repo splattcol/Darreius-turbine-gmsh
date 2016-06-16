@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  3.0.1                                 |
+|  \\    /   O peration     | Version:  2.3.0                                 |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -10,40 +10,35 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "system";
-    object      controlDict;
+    object      createBafflesDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     pimpleDyMFoam;
+internalFacesOnly true;
 
-startFrom       latestTime;
+baffles
+{
+    baffleFaces
+    {
+        type		faceZone;
+        zoneName	AMI-Rt;
+    	flip		true;
+	
+        patches
+        {
+            master
+            {
+                name            AMI-St;
+                type            cyclicAMI;
+            }
+            slave
+	    { 
+			name	AMI-Rt;
+			type	cyclicAMI;
+	    }
+        }
+    }
+}
 
-startTime       0;
+// ************************************************************************* // 
 
-stopAt          endTime;
-
-endTime         0.1;
-
-deltaT          5e-4;
-
-writeControl    adjustableRunTime;
-
-writeInterval   0.001;
-
-purgeWrite      0;
-
-writeFormat     ascii;
-
-writePrecision  6;
-
-writeCompression off;
-
-timeFormat      general;
-
-timePrecision   6;
-
-runTimeModifiable true;
-
-
-// ************************************************************************* //

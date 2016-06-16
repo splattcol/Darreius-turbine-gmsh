@@ -10,49 +10,27 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "system";
-    object      fvSchemes;
+    location    "constant";
+    object      dynamicMeshDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-ddtSchemes
-{
-    default         Euler;
-}
+dynamicFvMesh   solidBodyMotionFvMesh;
 
-gradSchemes
-{
-    default         Gauss linear;
-    grad(p)         Gauss linear;
-    grad(U)         Gauss linear 1;
-}
+motionSolverLibs ( "libfvMotionSolvers.so" );
 
-divSchemes
+solidBodyMotionFvMeshCoeffs
 {
-    default         none;
-//    div(phi,U)      Gauss upwind;
-    div(phi,U)      Gauss linearUpwind grad(U);
-    div(phi,k)      Gauss upwind;
-    div(phi,epsilon) Gauss upwind;
-    div((nuEff*dev2(T(grad(U))))) Gauss linear;
-}
+    cellZone        rotor;
 
-laplacianSchemes
-{
-    default         Gauss linear limited corrected 0.33;
+    solidBodyMotionFunction  rotatingMotion;
+    rotatingMotionCoeffs
+    {
+        origin        (0 0 0);
+        axis          (0 0 1);
+        omega         6.2832; // rad/s
+    }
 }
-
-interpolationSchemes
-{
-    default         linear;
-    interpolate(HbyA) linear;
-}
-
-snGradSchemes
-{
-    default         limited corrected 0.33;
-}
-
 
 
 // ************************************************************************* //
