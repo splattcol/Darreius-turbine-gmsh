@@ -9,15 +9,15 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       volScalarField;
+    class       volVectorField;
     location    "0";
-    object      p;
+    object      vorticity;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 2 -2 0 0 0 0];
+dimensions      [0 0 -1 0 0 0 0];
 
-internalField   uniform 0;
+internalField   uniform (0 -0 0);
 
 boundaryField
 {
@@ -27,42 +27,48 @@ boundaryField
     }
     patch1
     {
-        type            zeroGradient;
+        type            calculated;
+        value           uniform (0 -0 0);
     }
     patch2
     {
-        type            zeroGradient;
+        type            calculated;
+        value           uniform (0 -0 0);
     }
     patch3
     {
-        type            zeroGradient;
+        type            calculated;
+        value           uniform (0 -0 0);
     }
     Shaft
     {
-        type            zeroGradient;
+        type            calculated;
+        value           uniform (0 -0 0);
     }
     Inlet
     {
-        type            zeroGradient;
+        type            calculated;
+        value           uniform (0 -0 0);
     }
     Lat-Wall
     {
-        type            zeroGradient;
+        type            calculated;
+        value           uniform (0 -0 0);
     }
     Outlet
     {
-        type            fixedValue;
-        value           uniform 0;
-    }
-    AMI-Rt
-    {
-        type            cyclicAMI;
-        value           $internalField;
+        type            calculated;
+        value           uniform (0 -0 0);
     }
     AMI-St
     {
         type            cyclicAMI;
-        value           $internalField;
+        value           uniform (0 -0 0);
+    }
+    AMI-Rt
+    {
+        type            cyclicAMI;
+        value           uniform (0 -0 0);
     }
 }
 
