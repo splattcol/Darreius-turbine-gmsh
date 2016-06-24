@@ -25,28 +25,35 @@ def line2dict(line):
 	return coeffs_dict
 
 time = []
-Cd=[]
-Cl=[]
-Cm = []
+Cd   = []
+Cl   = []
+Cm   = []
+Cp   = []
 angle=[]
+r = 0.175/2
+w = 52.57
+v = 2.8
+l = r*w/v
 with open(Coeffs_file,"r") as datafile:
 	for line in datafile:
 		if line[0] == "#":
 			continue
 		coeffs_dict = line2dict(line)
-		alpha = float(52.57*coeffs_dict['time'])
-		angle+= [alpha]
+		alpha = float(w*coeffs_dict['time'])
+		angle+= [math.acos(math.cos(alpha))]
 		time += [coeffs_dict['time']]
-		Cd   += [math.sin(alpha)*coeffs_dict['Cx'][0] +math.cos(alpha)*coeffs_dict['Cy'][0]]
-		Cl   += [math.cos(alpha)*coeffs_dict['Cx'][0] +math.sin(alpha)*coeffs_dict['Cy'][0]]
-		Cm += [coeffs_dict['Cm'][0]
-
+		Cd   += [math.sin(alpha)*coeffs_dict['Cx'] +math.cos(alpha)*coeffs_dict['Cy']]
+		Cl   += [math.cos(alpha)*coeffs_dict['Cx'] +math.sin(alpha)*coeffs_dict['Cy']]
+		Cm   += [coeffs_dict['Cm']]
+##		 Calculo coeficiente de presion
+		Cp   +=[Cl[-1]*math.sqrt(1+l**2)*(l-(Cd[-1]/Cl[-1])*l**2)]
+		
 datafile.close()
 
-outputfile = open('forces.txt','w')
+outputfile = open('forceCoeffs.txt','w')
 for i in range(0,len(time)):
-	outputfile.write(str(time[i])+' '+str(angle[i])+' '+str(Cm[i])+' '+str(Cd[i])+' '+str(Cl[i])+'\n')
+	outputfile.write(str(time[i])+' '+str(angle[i])+' '+str(Cm[i])+' '+str(Cd[i])+' '+str(Cl[i])+' '+str(Cp[i])+'\n')
 outputfile.close()
 
-os.system("./plotForces.sh")  
+#os.system("./plotForces.sh")  
 

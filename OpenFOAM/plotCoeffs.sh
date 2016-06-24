@@ -1,13 +1,15 @@
 #!/bin/bash
 
 gnuplot -persist > /dev/null 2>&1 << EOF
-	set title "Forces vs. Time"
-	set polar
-	set grid polar
-	unset border
-	unset xtics
-	unset ytics
-	plot	"forceCoeffs.txt" using 1:2 title 'Cm' with linespoints,\
-			"forces.txt" using 1:3 title 'Cd' with linespoints,\
-			"forces.txt" using 1:4 title 'Cl' with linespoints
+	set title "Coeffs vs. Angle"
+	
+	set xlabel "Angle (rad)"
+	set ylabel "Coeffs ( )"
+	set xtic auto
+	set ytic auto
+	set grid 
+	plot	"forceCoeffs.txt" using 2:3 title 'Cm' with linespoints,\
+			"forceCoeffs.txt" using 2:4 title 'Cd' with linespoints,\
+			"forceCoeffs.txt" using 2:5 title 'Cl' with linespoints,\
+			"forceCoeffs.txt" using 2:6 title 'Cp' with linespoints
 EOF

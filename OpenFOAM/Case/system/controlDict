@@ -77,8 +77,8 @@ functions
         FxDir       (1 0 0);
         FyDir       (0 1 0);
         pitchAxis   (0 0 1);
-        lRef        1;
-        Aref        1;
+        lRef        0.032;
+        Aref        0.032*0.005;
     }
     AirFoil_2
     {
@@ -104,8 +104,8 @@ functions
         FxDir       (1 0 0);
         FyDir       (0 1 0);
         pitchAxis   (0 0 1);
-        lRef        1;
-        Aref        1;
+        lRef        0.032;
+        Aref        0.032*0.005;
     }
     AirFoil_3
     {
@@ -131,8 +131,8 @@ functions
         FxDir       (1 0 0);
         FyDir       (0 1 0);
         pitchAxis   (0 0 1);
-        lRef        1;
-        Aref        1;
+        lRef        0.032;
+        Aref        0.032*0.005;
     }
 
     AirFoil_All
