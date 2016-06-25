@@ -4,6 +4,9 @@ import os
 import sys
 import math
 
+for i in range(0,3):
+	
+
 Coeffs_file = "forceCoeffs.dat"
 
 if not os.path.isfile(Coeffs_file):
@@ -42,8 +45,8 @@ with open(Coeffs_file,"r") as datafile:
 		alpha = float(w*coeffs_dict['time'])
 		angle+= [math.acos(math.cos(alpha))]
 		time += [coeffs_dict['time']]
-		Cd   += [math.sin(alpha)*coeffs_dict['Cx'] +math.cos(alpha)*coeffs_dict['Cy']]
-		Cl   += [math.cos(alpha)*coeffs_dict['Cx'] +math.sin(alpha)*coeffs_dict['Cy']]
+		Cd   += [math.cos(alpha)*coeffs_dict['Cx'] +math.sin(alpha)*coeffs_dict['Cy']]
+		Cl   += [math.sin(alpha)*coeffs_dict['Cx'] +math.cos(alpha)*coeffs_dict['Cy']]
 		Cm   += [coeffs_dict['Cm']]
 ##		 Calculo coeficiente de presion
 		Cp   +=[Cl[-1]*math.sqrt(1+l**2)*(l-(Cd[-1]/Cl[-1])*l**2)]
