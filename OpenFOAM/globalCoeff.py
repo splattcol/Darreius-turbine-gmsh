@@ -50,7 +50,7 @@ Cl   = []
 Cm   = []
 Cp   = []
 
-outputfile = open('globalCoeff.txt','w')
+outputfile = open('globalCoeffs.txt','w')
 for j in range(0,lengthData()):
 	CmT = 0
 	CdT = 0
