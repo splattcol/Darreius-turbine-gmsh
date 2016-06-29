@@ -49,7 +49,7 @@ for i in range(blades):
 			if line[0] == "#":
 				continue
 			A_dict = line2dict(line)
-			alpha = float(w*A_dict['time']+(i*(2*math.pi/blades)))
+			alpha = float(w*A_dict['time']-(i*(2*math.pi/blades)))
 			angle+= [alpha]
 			time += [A_dict['time']]
 			Cd   += [math.cos(alpha)*A_dict['Cx'] +math.sin(alpha)*A_dict['Cy']]
