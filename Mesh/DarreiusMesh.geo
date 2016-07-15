@@ -24,7 +24,6 @@ nPoint		= 25; 		// Chord nPoint
 nPointRotor 	= 120;		// RotateMesh nPoint
 nPointFar 	= 50;		// Farfield nPoint
 nPointInletOulet= 80;		// Inlet-Oulet nPoint
-rMesh		= 1/4;		// ratio mesh - if rMesh = 1/4 then Mesh radius = (1+1/4)rRotor
 nearBlade	= 1/2*Chord;	// Near blade zone - structured mesh zone - 
 nearRotor	= 1.5*rRotor;	// Near Rotor zone - rotation mesh zone -  !! nearRotor > rRotor !!
 nearShaft	= 1.5;		// Near Shaft zone - structured mesh zone -!! nearShaft > 1 !!
@@ -32,9 +31,11 @@ dx 		= 1e-6;		// Diference between staticMeshRotor and rotationMeshRotor
 dInlet		= 0.35;		// length from {0,0,0} to Inlet (in -x)
 dOutlet		= 0.75;		// length from {0,0,0} to Outlet (in x)
 dWall		= 0.35;		// length from {0,0,0} to lateral walls
-lenghtZ		= 0.005;		// lenght for Extrusion
-dz		= 1;		// number of Extrusion's layers
-dh		= dz*0.1;		// point element zise
+lenghtZ		= 0.005;	// lenght for Extrusion
+dz		    = 1;		// number of Extrusion's layers
+dh		    = dz*0.1;	// point element zise
+nProg       = 1.2;       // Progression nearBladeZone
+nearRatio   = 0.5;      // Ratio nearBlade and nPoint divitions
 
 
 /* NACA equation constants */
@@ -145,9 +146,9 @@ For alpha In {0:1.999*Pi:2*Pi/nBlades}
 		Line(fline++) = upperPointMesh[]; Transfinite Line {fline}=nPoint; upperMesh[]+=-fline; temp = fline;
 		Line(fline++) = lowerPointMesh[]; Transfinite Line {fline}=nPoint; lowerMesh[]+=fline; temp1 = fline;
 		Line loop(fline++) = {-temp1, temp}; aHole[]+=fline;
-		Line(fline++) = {upperPointMesh[0],upperSurface[0]}; upperMesh[]+=fline; lowerMesh[]+=-fline ; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2;
+		Line(fline++) = {upperPointMesh[0],upperSurface[0]}; upperMesh[]+=fline; lowerMesh[]+=-fline ; Transfinite Line {fline}=nPoint*nearRatio Using Progression 1/nProg;
 
-		Line(fline++) = {lastPoint,upperPointMesh[nPoint]}; upperMesh[]+=fline; lowerMesh[]+=-fline;Transfinite Line {fline}=nPoint/2 Using Progression 1.2;
+		Line(fline++) = {lastPoint,upperPointMesh[nPoint]}; upperMesh[]+=fline; lowerMesh[]+=-fline;Transfinite Line {fline}=nPoint*nearRatio Using Progression nProg;
 	/* ----- Line loops and Surfaces generation -----*/
 	Line loop(fline++) = upperMesh[]; upperLoop = fline; Airfoil[]+=fline; 
 	Line loop(fline++) = lowerMesh[]; lowerLoop = fline; Airfoil[]+=fline; 
