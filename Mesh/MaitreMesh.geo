@@ -13,8 +13,6 @@ rCenter = 0.005;// Center shaft radius
 /* NACA parameters (NACA MPXX)*/
 
 Chord 	= 0.032;	// Chord length (m)
-Camber 	= 2; 		// maximun camber in % of Chord ( if M = 2 then maximun camber = 2*Chord/100)
-PCamber	= 4;		// position of the maximun camber (if P = 1 then position = 1*Chord/10)
 Thickness=18;		//maximun thickness of the airfoil in % of Chord (if XX = 12 then thickness = 12*Chord/100)
 
 /* ---- Mesh parameters ----*/
@@ -42,22 +40,21 @@ a0 = 0.2969;
 a1 = -0.126;
 a2 = -0.3516;
 a3 = 0.2843;
-a4 = -0.1036; //closed trailing edge!
-M  = Camber/100; 
-P  = PCamber/10;
+a4 = -0.1015; //open trailing edge!
 XX = Thickness/100;
 
 Acont=1;
 Airfoil[]={};
 aHole[]={};
 /* --- Rotor Mesh Generation ----*/
-For alpha In {0:1.999*Pi:2*Pi/nBlades}
+For zeta In {0:1.999*Pi:2*Pi/nBlades}
 	/* ---- Start Airfoil generation ----*/
 	count = newp;
 	upperSurface[]={};
 	lowerSurface[]={};
 	theta = Acos(Chord/2*rRotor);
 	boolean = 1;
+	bBoolean =1;
     rTail = 0.005*Chord;
 	For beta In {0:Pi:Pi/(5*nPoint)}
 	    x = (1-Cos(beta))/2; // improve head - tail resolution
@@ -71,9 +68,12 @@ For alpha In {0:1.999*Pi:2*Pi/nBlades}
 	        yu = (yc + yt*Cos(alpha))*Chord;
 	        xl = (x + yt*Sin(alpha))*Chord;
 	        yl = (yc - yt*Cos(alpha))*Chord;
-	        If (Fabs(yu-yl)<rTail && beta>Pi/2)
+	        If (Fabs(yu-yl)/2<rTail && x>.5)
 	            boolean = 0;
 	            xTailC = x*Chord;
+	            xTemp  = xu;	            
+	            xDesf  = Chord-(xTailC+rTail); 
+	            Printf("%g",xDesf);        
 	            yTailC = (yu+yl)/2;
 	            rTail  = Fabs(yu-yl)/2;
 	        EndIf
@@ -82,25 +82,28 @@ For alpha In {0:1.999*Pi:2*Pi/nBlades}
 	    // Tail-circunference
 	    If (boolean == 0)
 	   // Printf("Tail");
-	        xu = x*Chord;
-	        xl = x*Chord;
-	        yu = (Sqrt(rTail^2-(xu-xTailC)^2)+yTailC);
-	        yl = (-Sqrt(rTail^2-(xl-xTailC)^2)+yTailC);  
-	        Printf("%g",yu);
-	        Printf("%g",yl);
-//            Printf("%g",count);
+	        If (x*Chord-xDesf> xTemp)
+    	        xu = x*Chord-xDesf;
+       	        xl = x*Chord-xDesf;
+	        EndIf
+	        theta = Acos((xl-xTailC)/rTail);
+	        If ((xl-xTailC)/rTail>1)
+	            bBoolean = 0;
+	        EndIf
+	        yu = yTailC+rTail*Sin(theta);
+	        yl = yTailC-rTail*Sin(theta);
 	    EndIf
 	        If (yu==yl)
 	            Point(count++)={xu,yu,0, dh};upperSurface[]+=count; lowerSurface[]+=count;
 	        EndIf
-	        If (yu!=yl)
+	        If (yu!=yl && bBoolean ==1)
 	            Point(count++)={xu,yu,0, dh};upperSurface[]+=count;
 	            Point(count++)={xl,yl,0, dh};lowerSurface[]+=count;
 	       EndIf     
 	    
 	    
 	EndFor
-		//Point(count++)={(xu+xl)/2,(yu+yl)/2,0, dh};upperSurface[]+=count;lowerSurface[]+=count;
+		Point(count++)={x*Chord-xDesf,yTailC,0, dh};upperSurface[]+=count;lowerSurface[]+=count; lastPoint = count;
 	fline = newl;
 
 	upperMesh[]={}; // Lines for the upperMesh
@@ -109,10 +112,9 @@ For alpha In {0:1.999*Pi:2*Pi/nBlades}
 	Line(fline++) = upperSurface[]; Transfinite Line {fline}=nPoint; upperMesh[]+=fline;
 	Line(fline++) = lowerSurface[]; Transfinite Line {fline}=nPoint; lowerMesh[]+=-fline;
 
-
 	/* ---- End Airfoil generation ---- */
 
-	/* ---- Start Mesh generation  ---- *//*
+	/* ---- Start Mesh generation  ---- */
 
 	upperPointMesh[] = {};
 	lowerPointMesh[] = {};
@@ -137,8 +139,8 @@ For alpha In {0:1.999*Pi:2*Pi/nBlades}
 		Line loop(fline++) = {-temp1, temp}; aHole[]+=fline;
 		Line(fline++) = {upperPointMesh[0],upperSurface[0]}; upperMesh[]+=fline; lowerMesh[]+=-fline ; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2;
 
-		Line(fline++) = {upperSurface[nPoint],upperPointMesh[nPoint]}; upperMesh[]+=fline; lowerMesh[]+=-fline;Transfinite Line {fline}=nPoint/2 Using Progression 1.2;
-	/* ----- Line loops and Surfaces generation -----*//*
+		Line(fline++) = {lastPoint,upperPointMesh[nPoint]}; upperMesh[]+=fline; lowerMesh[]+=-fline;Transfinite Line {fline}=nPoint/2 Using Progression 1.2;
+	/* ----- Line loops and Surfaces generation -----*/
 	Line loop(fline++) = upperMesh[]; upperLoop = fline; Airfoil[]+=fline; 
 	Line loop(fline++) = lowerMesh[]; lowerLoop = fline; Airfoil[]+=fline; 
 	Airfoil~{Acont}[]={};
@@ -147,16 +149,16 @@ For alpha In {0:1.999*Pi:2*Pi/nBlades}
 	Translate{-Chord/2,0,0}{Surface{Airfoil~{Acont}[]};} // Translate Center Airfoil to {0,0,0}
 	/* ---- End structured mesh generation ---- */
 
-/* ---- Traslation and rotation ----*//*
-	x = rRotor*Sin(alpha);
-	y = rRotor*Cos(alpha);
+/* ---- Traslation and rotation ----*/
+	x = rRotor*Sin(zeta);
+	y = rRotor*Cos(zeta);
 	Translate{x,y,0}{Surface{Airfoil~{Acont}[]};}
-	Rotate {{0,0,1},{x,y,0},-alpha}{Surface{Airfoil~{Acont}[]};}
+	Rotate {{0,0,1},{x,y,0},-zeta}{Surface{Airfoil~{Acont}[]};}
 	
 	Acont++;
 EndFor
 /* ---- End nBlades Generation ----*/
-/* ---- Center Shaft ---- *//*
+/* ---- Center Shaft ---- */
 pCenter= newp;
 pShaft = newp;
 lShaft = newl;
@@ -168,9 +170,9 @@ lowerPCenter[]={}; //Mesh Point array
 upperMCenter[]={}; //Mesh Line array
 lowerMCenter[]={}; //Mesh Line array
 temp = 1;
-For alpha In {-Pi/2:Pi/2:Pi/nPointCenter}
-		x = rCenter*Sin(alpha);
-		y = rCenter*Cos(alpha);
+For zeta In {-Pi/2:Pi/2:Pi/nPointCenter}
+		x = rCenter*Sin(zeta);
+		y = rCenter*Cos(zeta);
 	If ((y<=1e-10))
 		Point(pShaft++)={ x, y, 0, dh}; upperSCenter[]+=pShaft; lowerSCenter[]+=pShaft;
 		Point(pShaft++)={ nearShaft*x, nearShaft*y, 0, dh}; upperPCenter[]+=pShaft; lowerPCenter[]+=pShaft;
@@ -182,7 +184,7 @@ For alpha In {-Pi/2:Pi/2:Pi/nPointCenter}
 		Point(pShaft++)={ nearShaft*x,-nearShaft*y, 0, dh}; lowerPCenter[]+=pShaft;
 	EndIf
 EndFor
-	/* ----- Line loops and Surfaces generation -----*//*
+	/* ----- Line loops and Surfaces generation -----*/
 	Line (lShaft++)={upperSCenter[0],upperPCenter[0]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2;  upperMCenter[]+=-lShaft; lowerMCenter[]+= lShaft;
 	Line (lShaft++)={upperSCenter[nPointCenter],upperPCenter[nPointCenter]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2; upperMCenter[]+= lShaft;  lowerMCenter[]+=-lShaft;
 
@@ -197,7 +199,7 @@ EndFor
 	Plane Surface(lShaft++) = {ShaftL};  Transfinite Surface{lShaft}; Recombine Surface{lShaft}; ShaftS_L = lShaft;
 	/* ---- End structured mesh generation ---- */
 /* ---- End Center Shaft Generation ---- */
-/* ---- Rotor Mesh ---- *//*
+/* ---- Rotor Mesh ---- */
 
 StaticRotorPoint[]={};
 RotateRotorPoint[]={};
@@ -219,7 +221,7 @@ EndFor
 	Line loop (lRotor++) = temp; StaticRotorLine = lRotor;
 //	Plane Surface (lRotor++) = {StaticRotorLine, llRotor}; StRotorS = lRotor; Recombine Surface {lRotor};
 
-/* ---- Farfield ----*//*
+/* ---- Farfield ----*/
 
 ffpoint	= newp;
 ffline	= newl;
@@ -240,7 +242,7 @@ Line (ffline++)	= fWallL[]; lWallL = ffline; Transfinite Line {lWallL} = nPointF
 
 Line loop (ffline++) = {lInlet, lWallL, lOulet,-lWallU}; temp = ffline;
 Plane Surface(ffline++) = {temp, StaticRotorLine}; farfieldS = ffline;
-/* ---- Extrusion ----*//*
+/* ---- Extrusion ----*/
 FaB[]={};
 Avolume[]={};
 For i In {1:nBlades} // First Extrusion!!
@@ -280,7 +282,7 @@ Add[] = Extrude {0,0,lenghtZ}{
 	Surface{StRotorS};
 	Layers {dz};
 	Recombine;
-};*//*
+};*/
 
 Physical Surface ("AMI-Rt") = {Rotor[2]};
 Physical Surface ("AMI-St") = {Farfield[6]};
