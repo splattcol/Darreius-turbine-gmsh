@@ -4,13 +4,9 @@ import os
 import sys
 import math
 
-forces_file = "forces.dat"
-
-if not os.path.isfile(forces_file):
-	print "Forces file not found at "+forces_file
-	print "Be sure that the case has been run and you have the right directory!"
-	print "Exiting."
-	sys.exit()
+Ui  = 2.8
+Ut  = 52.57*.175/2
+blades = 3
 
 def line2dict(line):
 	tokens_unprocessed = line.split()
@@ -30,32 +26,46 @@ def line2dict(line):
 	data_dict['moment'] = moment_dict
 	return data_dict
 
-time = []
-# Fx = []
-# Fy = []
-drag=[]
-lift=[]
-moment = []
-angle=[]
-with open(forces_file,"r") as datafile:
-	for line in datafile:
-		if line[0] == "#":
-			continue
-		data_dict = line2dict(line)
-		time += [data_dict['time']]
-		Fx = data_dict['force']['pressure'][0] + data_dict['force']['viscous'][0]
-		Fy = data_dict['force']['pressure'][1] + data_dict['force']['viscous'][1]
-		moment += [data_dict['moment']['pressure'][2] + data_dict['moment']['viscous'][2]]
-		alpha = float(52.57*data_dict['time'])
-		angle+= [math.acos(math.cos(alpha))]
-		drag += [math.sin(alpha)*Fx+math.cos(alpha)*Fy]
-		lift += [math.cos(alpha)*Fx+math.sin(alpha)*Fx]
-datafile.close()
+for i in range(blades):
+    i_str = str(i+1);
+    forces_file = "AirFoil_"+i_str+"/0/forces.dat"
 
-outputfile = open('forces.txt','w')
-for i in range(0,len(time)):
-	outputfile.write(str(angle[i])+' '+str(lift[i])+' '+str(drag[i])+' '+str(moment[i])+'\n')
-outputfile.close()
+    if not os.path.isfile(forces_file):
+	    print "Forces file not found at "+forces_file
+	    print "Be sure that the case has been run and you have the right directory!"
+	    print "Exiting."
+	    sys.exit()
 
-os.system("./plotForces.sh")  
+    time = []
+    Fl=[]
+    Fd=[]
+    moment = []
+    angle=[]
+    rev = 0
+    with open(forces_file,"r") as datafile:
+    	for line in datafile:
+    		if line[0] == "#":
+    			continue
+    		data_dict = line2dict(line)
+    		time += [data_dict['time']]
+    		Fx  = data_dict['force']['pressure'][0] + data_dict['force']['viscous'][0]
+    		Fy  = data_dict['force']['pressure'][1] + data_dict['force']['viscous'][1]
+    		moment += [data_dict['moment']['pressure'][2] + data_dict['moment']['viscous'][2]]
+    		alpha = float(52.57*data_dict['time']-(i*(2*math.pi/blades)))
+    		U   = math.sqrt(Ui**2+Ut**2-2*Ui*Ut*math.cos(alpha))
+    		theta = math.asin(Ut*math.sin(alpha)/U)
+    		if math.degrees(alpha)-360*rev>360:
+    		    rev+=1
+    		angle+= [math.degrees(alpha)-360*rev]
+    		Fl +=[Fy*math.cos(theta)+Fx*math.sin(theta)]
+    		Fd +=[Fx*math.cos(theta)+Fy*math.sin(theta)]
+    
+    datafile.close()
+
+    outputfile = open('forces_'+i_str+'.txt','w')
+    for i in range(0,len(time)):
+    	outputfile.write(str(time[i])+' '+str(angle[i])+' '+str(Fd[i])+' '+str(Fl[i])+' '+str(moment[i])+'\n')
+    outputfile.close()
+        
+#    os.system("./plotForces.sh")  
 

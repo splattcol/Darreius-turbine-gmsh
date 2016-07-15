@@ -4,9 +4,14 @@ import os
 import sys
 import math
 
-blades = 3
-files = {}
-Datas = {}
+blades  = 3
+omega   = 52.57
+Uinf    = 2.8
+radio   = .175/2
+Aref    = 2*radio*.005
+rho     = 1000
+files   = {}
+Datas   = {}
 
 def getData (fileN):
 	aData = {}
@@ -17,27 +22,26 @@ def getData (fileN):
 			floats = [float(x) for x in tokens]
 			aData[('time',cont)]= floats[0]
 			aData[('angle',cont)]=floats[1]
-			aData[('Cm',cont)] = floats[2]
-			aData[('Cd',cont)] = floats[3]
-			aData[('Cl',cont)] = floats[4]
-			aData[('Cp',cont)] = floats[5]
+			aData[('Fd',cont)] = floats[2]
+			aData[('Fl',cont)] = floats[3]
+			aData[('m',cont)] = floats[4]
 			cont +=1
 		datafile.close()
 		return aData
 
 def lengthData ():
 	cont=0
-	with open("AirFoil_1_Coeffs.txt","r") as datafile:
+	with open("forces_1.txt","r") as datafile:
 		for line in datafile:
 			cont+=1
 	return cont
 	
 for i in range(blades):
 	i_str  = str(i+1)
-	name = "AirFoil_"+i_str+"_Coeffs.txt"
+	name = "forces_"+i_str+".txt"
 
 	if not os.path.isfile(name):
-		print "Coeffs file not found at "+Coeffs_file
+		print "Coeffs file not found at "+name
 		print "Be sure that the case has been run and you have the right directory!"
 		print "Exiting."
 		sys.exit()
@@ -45,9 +49,9 @@ for i in range(blades):
 
 time = []
 angle= []
+Cm   = []
 Cd   = []
 Cl   = []
-Cm   = []
 Cp   = []
 
 outputfile = open('globalCoeffs.txt','w')
@@ -57,10 +61,10 @@ for j in range(0,lengthData()):
 	ClT = 0
 	CpT = 0
 	for k in range(blades):
-		CmT+=Datas[k][('Cm',j)]
-		CdT+=Datas[k][('Cd',j)]
-		ClT+=Datas[k][('Cl',j)]
-		CpT+=Datas[k][('Cp',j)]
+		CmT+=Datas[k][('m',j)]/(.5*rho*Uinf**2*Aref*radio)
+		CdT+=Datas[k][('Fd',j)]/(.5*rho*Uinf**2*Aref)
+		ClT+=Datas[k][('Fl',j)]/(.5*rho*Uinf**2*Aref)
+		CpT+=Datas[k][('m',j)]*omega/(.5*rho*Uinf**3*Aref)
 	time += [Datas[0][('time',j)]]
 	angle+=[Datas[0][('angle',j)]]
 	Cm += [CmT]
