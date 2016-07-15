@@ -14,6 +14,7 @@ rCenter = 0.005;// Center shaft radius
 
 Chord 	= 0.032;	// Chord length (m)
 Thickness=18;		//maximun thickness of the airfoil in % of Chord (if XX = 12 then thickness = 12*Chord/100)
+rTail = 0.005*Chord;// tail radius
 
 /* ---- Mesh parameters ----*/
 nPointCenter	= 10;		// Shaft nPoint
@@ -55,7 +56,6 @@ For zeta In {0:1.999*Pi:2*Pi/nBlades}
 	theta = Acos(Chord/2*rRotor);
 	boolean = 1;
 	bBoolean =1;
-    rTail = 0.005*Chord;
 	For beta In {0:Pi:Pi/(5*nPoint)}
 	    x = (1-Cos(beta))/2; // improve head - tail resolution
 	    If (boolean ==1)	    

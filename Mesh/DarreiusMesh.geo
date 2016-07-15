@@ -15,7 +15,8 @@ rCenter = 0.005;// Center shaft radius
 Chord 	= 0.032;	// Chord length (m)
 Camber 	= 2; 		// maximun camber in % of Chord ( if M = 2 then maximun camber = 2*Chord/100)
 PCamber	= 4;		// position of the maximun camber (if P = 1 then position = 1*Chord/10)
-Thickness=18;		//maximun thickness of the airfoil in % of Chord (if XX = 12 then thickness = 12*Chord/100)
+Thickness=18;		// maximun thickness of the airfoil in % of Chord (if XX = 12 then thickness = 12*Chord/100)
+rTail = 0.005*Chord;// tail radius
 
 /* ---- Mesh parameters ----*/
 nPointCenter	= 10;		// Shaft nPoint
@@ -42,7 +43,7 @@ a0 = 0.2969;
 a1 = -0.126;
 a2 = -0.3516;
 a3 = 0.2843;
-a4 = -0.1036; //closed trailing edge!
+a4 = -0.1015; //open trailing edge!
 M  = Camber/100; 
 P  = PCamber/10;
 XX = Thickness/100;
@@ -56,35 +57,60 @@ For alpha In {0:1.999*Pi:2*Pi/nBlades}
 	count = newp;
 	upperSurface[]={};
 	lowerSurface[]={};
+	boolean = 1;
+	bBoolean= 1;
 
-	For beta In {0:Pi:Pi/nPoint}
+	For beta In {0:Pi:Pi/(5*nPoint)}
 	
 		x = (1-Cos(beta))/2; // improve head - tail resolution
-
-		If (x<(PCamber/10))
-			yc = (M/(P^2))*((2*P*x)-x^2);
-			dyx= (2*M/P^2)*(P-x);
+        If (boolean == 1)
+		    If (x<(PCamber/10))
+		    	yc = (M/(P^2))*((2*P*x)-x^2);
+		    	dyx= (2*M/P^2)*(P-x);
+		    EndIf
+		    If (x>=(PCamber/10) && x<1)
+		    	yc = (M/(1-P)^2)*(1-2*P+2*P*x-x^2);
+		    	dyx= (2*M/(1-P))*(P-x);
+		    EndIf	
+		    yt = XX/0.2*(a0*x^(1/2)+a1*x+a2*x^(2)+a3*x^(3)+a4*x^(4));
+		    theta= Atan(dyx);
+		    xu = (x - yt*Sin(theta))*Chord;
+		    yu = (yc + yt*Cos(theta))*Chord;
+		    xl = (x + yt*Sin(theta))*Chord;
+		    yl = (yc - yt*Cos(theta))*Chord;
+            If (Fabs(yu-yl)/2<rTail && x>.5)
+	            boolean = 0;
+	            xTailC = x*Chord;
+	            xTemp  = xu;	            
+	            xDesf  = Chord-(xTailC+rTail); 
+	            Printf("%g",xDesf);        
+	            yTailC = (yu+yl)/2;
+	            rTail  = Fabs(yu-yl)/2;
+	        EndIf
+        EndIf
+        // Tail-circunference
+	    If (boolean == 0)
+	   // Printf("Tail");
+	        If (x*Chord-xDesf> xTemp)
+    	        xu = x*Chord-xDesf;
+       	        xl = x*Chord-xDesf;
+	        EndIf
+	        theta = Acos((xl-xTailC)/rTail);
+	        If ((xl-xTailC)/rTail>1)
+	            bBoolean = 0;
+	        EndIf
+	        yu = yTailC+rTail*Sin(theta);
+	        yl = yTailC-rTail*Sin(theta);
+	    EndIf        
+        If (yu==yl)
+		   	Point(count++)={xu,yu,0, dh};upperSurface[]+=count; lowerSurface[]+=count;
 		EndIf
-		If (x>=(PCamber/10) && x<1)
-			yc = (M/(1-P)^2)*(1-2*P+2*P*x-x^2);
-			dyx= (2*M/(1-P))*(P-x);
-		EndIf
-	
-		yt = XX/0.2*(a0*x^(1/2)+a1*x+a2*x^(2)+a3*x^(3)+a4*x^(4));
-		theta= Atan(dyx);
-		xu = (x - yt*Sin(theta))*Chord;
-		yu = (yc + yt*Cos(theta))*Chord;
-		xl = (x + yt*Sin(theta))*Chord;
-		yl = (yc - yt*Cos(theta))*Chord;
-		If (yu==yl)
-			Point(count++)={xu,yu,0, dh};upperSurface[]+=count; lowerSurface[]+=count;
-		EndIf
-		If (yu!=yl)
-			Point(count++)={xu,yu,0, dh};upperSurface[]+=count;
-			Point(count++)={xl,yl,0, dh};lowerSurface[]+=count;
+		If (yu!=yl && bBoolean==1)
+		   	Point(count++)={xu,yu,0, dh};upperSurface[]+=count;
+		   	Point(count++)={xl,yl,0, dh};lowerSurface[]+=count;
 		EndIf
 	EndFor
-		Point(count++)={Chord,0,0, dh};upperSurface[]+=count;lowerSurface[]+=count;
+		Point(count++)={x*Chord-xDesf,yTailC,0, dh};upperSurface[]+=count;lowerSurface[]+=count; lastPoint = count;
 	fline = newl;
 
 	upperMesh[]={}; // Lines for the upperMesh
@@ -121,7 +147,7 @@ For alpha In {0:1.999*Pi:2*Pi/nBlades}
 		Line loop(fline++) = {-temp1, temp}; aHole[]+=fline;
 		Line(fline++) = {upperPointMesh[0],upperSurface[0]}; upperMesh[]+=fline; lowerMesh[]+=-fline ; Transfinite Line {fline}=nPoint/2 Using Progression 1/1.2;
 
-		Line(fline++) = {upperSurface[nPoint],upperPointMesh[nPoint]}; upperMesh[]+=fline; lowerMesh[]+=-fline;Transfinite Line {fline}=nPoint/2 Using Progression 1.2;
+		Line(fline++) = {lastPoint,upperPointMesh[nPoint]}; upperMesh[]+=fline; lowerMesh[]+=-fline;Transfinite Line {fline}=nPoint/2 Using Progression 1.2;
 	/* ----- Line loops and Surfaces generation -----*/
 	Line loop(fline++) = upperMesh[]; upperLoop = fline; Airfoil[]+=fline; 
 	Line loop(fline++) = lowerMesh[]; lowerLoop = fline; Airfoil[]+=fline; 
