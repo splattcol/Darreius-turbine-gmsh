@@ -22,7 +22,7 @@ solvers
         solver          GAMG;
         smoother        GaussSeidel;
         nPreSweeps      0;
-        nPostSweeps     2;
+        nPostSweeps     3;
         cacheAgglomeration off;
         agglomerator    faceAreaPair;
         nCellsInCoarsestLevel 100;
@@ -79,9 +79,9 @@ solvers
 PIMPLE
 {
     correctPhi          yes;
-    nOuterCorrectors    2;
-    nCorrectors         1;
-    nNonOrthogonalCorrectors 0;
+    nOuterCorrectors    3;
+    nCorrectors         3;
+    nNonOrthogonalCorrectors 3;
 
     pRefCell            0;
     pRefValue           0;

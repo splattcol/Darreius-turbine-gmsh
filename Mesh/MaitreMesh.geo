@@ -18,23 +18,24 @@ rTail = 0.005*Chord;// tail radius
 
 /* ---- Mesh parameters ----*/
 nPointCenter	= 10;		// Shaft nPoint
-nPoint		    = 25; 		// Chord nPoint
-nPointRotor 	= 120;		// RotateMesh nPoint
-nPointFar 	    = 50;		// Farfield nPoint
-nPointInletOulet= 80;		// Inlet-Oulet nPoint
+nPoint		    = 50; 		// Chord nPoint
+nPointRotor 	= 150;		// RotateMesh nPoint
+nPointFar 	    = 30;		// Farfield nPoint
+nPointInletOulet= 30;		// Inlet-Oulet nPoint
 nearBlade	    = 1/2*Chord;	// Near blade zone - structured mesh zone - 
 nearRotor	    = 1.5*rRotor;	// Near Rotor zone - rotation mesh zone -  !! nearRotor > rRotor !!
-nearShaft	    = 1.5;		// Near Shaft zone - structured mesh zone -!! nearShaft > 1 !!
-dx 		    = 1e-6;		// Diference between staticMeshRotor and rotationMeshRotor
+nearShaft	    = 2;	// Near Shaft zone - structured mesh zone -!! nearShaft > 1 !!
+dx 		    = 5e-5;		// Diference between staticMeshRotor and rotationMeshRotor
 dInlet		= 0.35;		// length from {0,0,0} to Inlet (in -x)
 dOutlet		= 0.75;		// length from {0,0,0} to Outlet (in x)
 dWall		= 0.35;		// length from {0,0,0} to lateral walls
-lenghtZ		= 0.005;	// lenght for Extrusion
+lenghtZ		= 0.001;	// lenght for Extrusion
 dz	    	= 1;		// number of Extrusion's layers
 dh	    	= dz*0.1;	// point element zise
-nProg       = 1.2;      // Progression nearBladeZone
+nProg       = 1.2;    // Progression nearBladeZone
 nearRatio   = 0.5;      // Ratio nearBlade and nPoint divitions
-
+extBump     = 1;     // exterior Bump parameter - structured blade mesh zone - 
+intBump     = 0.05;     // interior Bump parameter - structured blade mesh zone - 
 
 /* NACA equation constants */
 
@@ -110,8 +111,8 @@ For zeta In {0:1.999*Pi:2*Pi/nBlades}
 	upperMesh[]={}; // Lines for the upperMesh
 	lowerMesh[]={}; // Lines for the lowerMesh
 
-	Line(fline++) = upperSurface[]; Transfinite Line {fline}=nPoint; upperMesh[]+=fline;
-	Line(fline++) = lowerSurface[]; Transfinite Line {fline}=nPoint; lowerMesh[]+=-fline;
+	Line(fline++) = upperSurface[]; Transfinite Line {fline}=nPoint Using Bump intBump; upperMesh[]+=fline;
+	Line(fline++) = lowerSurface[]; Transfinite Line {fline}=nPoint Using Bump intBump; lowerMesh[]+=-fline;
 
 	/* ---- End Airfoil generation ---- */
 
@@ -135,8 +136,8 @@ For zeta In {0:1.999*Pi:2*Pi/nBlades}
 	EndFor
 		Point(count++)={Chord+nearBlade,0,0, dh};upperPointMesh[]+=count;lowerPointMesh[]+=count;
 
-		Line(fline++) = upperPointMesh[]; Transfinite Line {fline}=nPoint; upperMesh[]+=-fline; temp = fline;
-		Line(fline++) = lowerPointMesh[]; Transfinite Line {fline}=nPoint; lowerMesh[]+=fline; temp1 = fline;
+		Line(fline++) = upperPointMesh[]; Transfinite Line {fline}=nPoint Using Bump extBump; upperMesh[]+=-fline; temp = fline;
+		Line(fline++) = lowerPointMesh[]; Transfinite Line {fline}=nPoint Using Bump extBump; lowerMesh[]+=fline; temp1 = fline;
 		Line loop(fline++) = {-temp1, temp}; aHole[]+=fline;
 		Line(fline++) = {upperPointMesh[0],upperSurface[0]}; upperMesh[]+=fline; lowerMesh[]+=-fline ; Transfinite Line {fline}=nPoint*nearRatio Using Progression 1/nProg;
 
@@ -186,8 +187,8 @@ For zeta In {-Pi/2:Pi/2:Pi/nPointCenter}
 	EndIf
 EndFor
 	/* ----- Line loops and Surfaces generation -----*/
-	Line (lShaft++)={upperSCenter[0],upperPCenter[0]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2;  upperMCenter[]+=-lShaft; lowerMCenter[]+= lShaft;
-	Line (lShaft++)={upperSCenter[nPointCenter],upperPCenter[nPointCenter]}; Transfinite Line{lShaft}= nPointCenter/2 Using Progression 1.2; upperMCenter[]+= lShaft;  lowerMCenter[]+=-lShaft;
+	Line (lShaft++)={upperSCenter[0],upperPCenter[0]}; Transfinite Line{lShaft}= nPointCenter Using Progression 1.1;  upperMCenter[]+=-lShaft; lowerMCenter[]+= lShaft;
+	Line (lShaft++)={upperSCenter[nPointCenter],upperPCenter[nPointCenter]}; Transfinite Line{lShaft}= nPointCenter Using Progression 1.1; upperMCenter[]+= lShaft;  lowerMCenter[]+=-lShaft;
 
 	Line (lShaft++)=upperSCenter[]; Transfinite Line{lShaft} = nPointCenter; upperMCenter[]+= lShaft; 
 	Line (lShaft++)=lowerSCenter[]; Transfinite Line{lShaft} = nPointCenter; lowerMCenter[]+=-lShaft; 
@@ -216,7 +217,7 @@ EndFor
 	StaticRotorPoint[]+=StaticRotorPoint[0];
 	Line (lRotor) = RotateRotorPoint[]; Transfinite Line (lRotor) = nPointRotor; rlRotor = lRotor;
 	Line loop(lRotor++) = {rlRotor}; llRotor = lRotor;
-	Plane Surface (lRotor++) = {llRotor, aHole[], Shaft}; RotorS = lRotor;
+	Plane Surface (lRotor++) = {llRotor, aHole[], Shaft}; RotorS = lRotor; //Recombine Surface {lRotor};
 	Line (lRotor++) = StaticRotorPoint[]; Transfinite Line (lRotor) = nPointRotor; temp = lRotor;
 //	Line (lRotor++) = {RotateRotorPoint[0], StaticRotorPoint[0]};
 	Line loop (lRotor++) = temp; StaticRotorLine = lRotor;
@@ -238,8 +239,8 @@ Point(ffpoint++)= {dOutlet, dWall, 0, dh}; fOulte[]+=ffpoint; fWallU[]+=ffpoint;
 
 Line (ffline)	= fInlet[]; lInlet = ffline; Transfinite Line {lInlet} = nPointInletOulet;
 Line (ffline++)	= fOulte[]; lOulet = ffline; Transfinite Line {lOulet} = nPointInletOulet;
-Line (ffline++)	= fWallU[]; lWallU = ffline; Transfinite Line {lWallU} = nPointFar Using Bump 0.5;
-Line (ffline++)	= fWallL[]; lWallL = ffline; Transfinite Line {lWallL} = nPointFar Using Bump 0.5;
+Line (ffline++)	= fWallU[]; lWallU = ffline; Transfinite Line {lWallU} = nPointFar Using Bump 0.75;
+Line (ffline++)	= fWallL[]; lWallL = ffline; Transfinite Line {lWallL} = nPointFar Using Bump 0.75;
 
 Line loop (ffline++) = {lInlet, lWallL, lOulet,-lWallU}; temp = ffline;
 Plane Surface(ffline++) = {temp, StaticRotorLine}; farfieldS = ffline;

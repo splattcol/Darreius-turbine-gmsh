@@ -10,3 +10,4 @@
  # pimpleDyMFoam # inicia la simulacion en serie
  # decomposePar # divide la malla de acuerdo a decomposePar ubicado en la carpeta system
  # mpirun -n 4 pimpleDyMFoam - parallel > log & # corre la simulacion en paralelo en n nodos
+ # paraview foam.foam & # para visualizar el caso en cualquier momento
