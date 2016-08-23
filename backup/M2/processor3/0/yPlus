@@ -1,0 +1,157 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  3.0.1                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      yPlus;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    FrontAndBack
+    {
+        type            empty;
+    }
+    patch1
+    {
+        type            calculated;
+        value           nonuniform List<scalar> 
+37
+(
+1.22305
+1.21612
+1.20701
+1.19245
+1.17883
+1.16285
+1.1417
+1.11801
+1.0841
+1.04463
+1.00267
+0.954042
+0.898458
+0.838833
+0.770619
+0.689992
+0.875245
+1.03516
+1.19529
+1.17418
+1.14914
+1.12018
+1.08728
+1.04735
+0.996855
+0.942583
+0.884802
+0.820287
+0.748773
+0.670459
+0.588918
+0.500905
+0.406353
+0.3091
+0.247088
+0.769253
+0.982223
+)
+;
+    }
+    patch2
+    {
+        type            calculated;
+        value           nonuniform 0();
+    }
+    patch3
+    {
+        type            calculated;
+        value           nonuniform 0();
+    }
+    Shaft
+    {
+        type            calculated;
+        value           nonuniform List<scalar> 4(12.1534 12.2052 12.1534 12.2052);
+    }
+    Inlet
+    {
+        type            calculated;
+        value           nonuniform 0();
+    }
+    Lat-Wall
+    {
+        type            calculated;
+        value           nonuniform List<scalar> 
+26
+(
+1204.17
+1185.61
+899.391
+1067.54
+1168.66
+1128.1
+786.023
+941.34
+1160.03
+899.391
+834.814
+949.166
+574.669
+974.165
+862.004
+1041.96
+1012.13
+780.388
+889.731
+737.053
+871.664
+611.967
+709.817
+777.973
+709.549
+827.077
+)
+;
+    }
+    Outlet
+    {
+        type            calculated;
+        value           uniform 0;
+    }
+    AMI-St
+    {
+        type            cyclicAMI;
+        value           uniform 0;
+    }
+    AMI-Rt
+    {
+        type            cyclicAMI;
+        value           uniform 0;
+    }
+    procBoundary3to1
+    {
+        type            processor;
+        value           uniform 0;
+    }
+    procBoundary3to2
+    {
+        type            processor;
+        value           uniform 0;
+    }
+}
+
+
+// ************************************************************************* //
