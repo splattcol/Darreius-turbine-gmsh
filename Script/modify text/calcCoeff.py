@@ -56,7 +56,7 @@ for i in range(blades):
 			Cl   += [math.sin(alpha)*A_dict['Cx'] +math.cos(alpha)*A_dict['Cy']]
 			Cm   += [A_dict['Cm']]
 	##		 Calculo coeficiente de presion
-			Cp   +=[Cl[-1]*math.sqrt(1+l**2)*(l-(Cd[-1]/Cl[-1])*l**2)]
+			Cp   +=[A_dict['Cm']*l]
 
 	datafile.close()
 

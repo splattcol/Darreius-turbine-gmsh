@@ -1,4 +1,5 @@
 OpenFOAM/test/constant
+/base
 *~
 *.pos
 *.msh

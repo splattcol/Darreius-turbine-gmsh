@@ -22,23 +22,24 @@ def getData (fileN):
 			floats = [float(x) for x in tokens]
 			aData[('time',cont)]= floats[0]
 			aData[('angle',cont)]=floats[1]
-			aData[('Fd',cont)] = floats[2]
-			aData[('Fl',cont)] = floats[3]
-			aData[('m',cont)] = floats[4]
+			aData[('Cm',cont)] = floats[2]
+			aData[('Cd',cont)] = floats[3]
+			aData[('Cl',cont)] = floats[4]
+			aData[('Cp',cont)] = floats[5]
 			cont +=1
 		datafile.close()
 		return aData
 
 def lengthData ():
 	cont=0
-	with open("forces_1.txt","r") as datafile:
+	with open("AirFoil_1_Coeffs.txt","r") as datafile:
 		for line in datafile:
 			cont+=1
 	return cont
 	
 for i in range(blades):
 	i_str  = str(i+1)
-	name = "forces_"+i_str+".txt"
+	name = 'AirFoil_'+i_str+'_Coeffs'+'.txt'
 
 	if not os.path.isfile(name):
 		print "Coeffs file not found at "+name
@@ -55,16 +56,17 @@ Cl   = []
 Cp   = []
 
 outputfile = open('globalCoeffs.txt','w')
+outputfile.write('time\t angle\t Cm\t Cd\t Cl\t Cp\n')
 for j in range(0,lengthData()):
 	CmT = 0
 	CdT = 0
 	ClT = 0
 	CpT = 0
 	for k in range(blades):
-		CmT+=Datas[k][('m',j)]/(.5*rho*Uinf**2*Aref*radio)
-		CdT+=Datas[k][('Fd',j)]/(.5*rho*Uinf**2*Aref)
-		ClT+=Datas[k][('Fl',j)]/(.5*rho*Uinf**2*Aref)
-		CpT+=Datas[k][('m',j)]*omega/(.5*rho*Uinf**3*Aref)
+		CmT+=Datas[k][('Cm',j)]
+		CdT+=Datas[k][('Cd',j)]
+		ClT+=Datas[k][('Cl',j)]
+		CpT+=Datas[k][('Cp',j)]
 	time += [Datas[0][('time',j)]]
 	angle+=[Datas[0][('angle',j)]]
 	Cm += [CmT]
